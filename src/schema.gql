@@ -6,11 +6,24 @@ type User {
   id: ID!
   name: String!
   email: String!
+  password: String!
+  dni: Float!
+  firstName: String!
+  lastName: String!
+  birthDate: DateTime!
+  postalCode: Float!
+  street: String!
+  streetNumber: Float!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Query {
   findAll: [User!]!
-  user(id: Int!): UserResult!
+  user(id: String!): UserResult!
 }
 
 union UserResult = User | ErrorResponse
