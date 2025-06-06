@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../entities/users.model';
 import { delay } from 'rxjs';
 import { CustomLogger } from '@modules/common/logger/logger.service';
+import { ConfigService } from '@nestjs/config';
 
 //------------ MOCK DATA --------------------
 export const USERS_MOCK_DATA: User[] = [
@@ -39,13 +40,14 @@ export const USERS_MOCK_DATA: User[] = [
 export class UsersService {
 
     constructor (
-        private readonly logger: CustomLogger
+        private readonly logger: CustomLogger,
+        private readonly configService: ConfigService
     ) {}
 
     async FindAll (): Promise<User[]> {
 
         this.logger.log("UsersService - FindAll");
-        await delay(2000);
+        await delay(25000);
         return USERS_MOCK_DATA;
     }
 
