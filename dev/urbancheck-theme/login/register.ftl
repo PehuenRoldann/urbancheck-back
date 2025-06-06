@@ -6,18 +6,22 @@
     <form id="kc-register-form" action="${url.registrationAction}" method="post">
 
       <div class="form-group">
-        <label for="firstName" class="control-label">${msg("firstName")}</label>
+        <label for="firstName" class="control-label">Nombre</label>
         <input type="text" id="firstName" name="firstName" value="${(register.formData.firstName!'')}" class="form-control" />
       </div>
 
       <div class="form-group">
-        <label for="lastName" class="control-label">${msg("lastName")}</label>
+        <label for="lastName" class="control-label">Apellido</label>
         <input type="text" id="lastName" name="lastName" value="${(register.formData.lastName!'')}" class="form-control" />
       </div>
 
       <div class="form-group">
-        <label for="email" class="control-label">${msg("email")}</label>
+        <label for="email" class="control-label">Correo electrónico</label>
         <input type="text" id="email" name="email" value="${(register.formData.email!'')}" class="form-control" />
+      </div>
+
+      <div class "form-group">
+        <input type="hidden" id="username" name="username" value="${(register.formData.email!'')}" />
       </div>
 
       <div class="form-group">

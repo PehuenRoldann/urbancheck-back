@@ -7,30 +7,30 @@ services:
       POSTGRES_PASSWORD: secret123
       POSTGRES_DB: urbancheckdb
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   keycloak:
-      image: quay.io/keycloak/keycloak:21.1.1
-      command: start-dev --import-realm
-      restart: unless-stopped
-      environment:
-        KEYCLOAK_ADMIN: admin
-        KEYCLOAK_ADMIN_PASSWORD: admin123
-        KC_DB: postgres
-        KC_DB_URL_HOST: postgres
-        KC_DB_URL_DATABASE: urbancheckdb
-        KC_DB_USERNAME: urbancheck
-        KC_DB_PASSWORD: secret123
-        KEYCLOAK_ADMIN_THEME: urbancheck
-      ports:
-        - "8888:8080"
-      volumes:
-        - ./urbancheck-theme:/opt/keycloak/themes/urbancheck:ro
-        - ./keycloak-import:/opt/keycloak/data/import:ro
-      depends_on:
-        - postgres
+    image: quay.io/keycloak/keycloak:21.1.1
+    command: start-dev --import-realm
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: urbancheckdb
+      KC_DB_USERNAME: urbancheck
+      KC_DB_PASSWORD: secret123
+      KEYCLOAK_ADMIN_THEME: urbancheck
+    ports:
+      - '8888:8080'
+    volumes:
+      - ./urbancheck-theme:/opt/keycloak/themes/urbancheck:ro
+      - ./keycloak-import:/opt/keycloak/data/import:ro
+    depends_on:
+      - postgres
 
   minio:
     image: minio/minio:latest
@@ -40,8 +40,8 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
     ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Web UI
+      - '9000:9000' # API
+      - '9001:9001' # Web UI
     volumes:
       - minio_data:/data
 

@@ -1,6 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
-
 @ObjectType()
 export class User {
   @Field(() => ID)
@@ -32,9 +31,7 @@ export class User {
 
   @Field()
   street: string;
-  
+
   @Field()
   streetNumber: number;
-
-
 }
