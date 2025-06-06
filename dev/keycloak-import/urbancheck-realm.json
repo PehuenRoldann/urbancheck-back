@@ -1,0 +1,112 @@
+{
+  "realm": "urbancheck",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "Ciudadano"
+      },
+      {
+        "name": "Operador de Atenci\u00f3n al vecino"
+      },
+      {
+        "name": "Responsable de dependencia"
+      },
+      {
+        "name": "Miembro de cuadrilla"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "urbancheck-back",
+      "name": "urbancheck-back",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "urbancheck-secret",
+      "redirectUris": [],
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "dni",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "dni",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "dni",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "postalCode",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "postalCode",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "postalCode",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "street",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "street",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "street",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "streetNumber",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "streetNumber",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "streetNumber",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "urbancheck-front",
+      "name": "urbancheck-front",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [],
+  "groups": [],
+  "components": {},
+  "loginTheme": "urbancheck"
+}
