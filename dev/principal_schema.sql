@@ -1,5 +1,5 @@
-CREATE SCHEMA IF NOT EXISTS urbancheck;
-SET search_path TO urbancheck;
+CREATE SCHEMA IF NOT EXISTS urbancheck_back;
+SET search_path TO urbancheck_back;
 
 -- ENUMS
 CREATE TYPE role_enum AS ENUM ('Operador de Atención al vecino', 'Ciudadano', 'Responsable de dependencia', 'Miembro de cuadrilla');

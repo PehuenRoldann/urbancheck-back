@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model dependency {
+  id           String                    @id @db.Uuid
+  description  String
+  name         municipal_dependency_enum
+  user_account user_account[]
+}
+
+model issue {
+  id          String   @id @db.Uuid
+  description String
+  code        String
+  enabled     Boolean
+  ticket      ticket[]
+}
+
+model penalty {
+  id              String        @id @db.Uuid
+  penalty_type_id String?       @db.Uuid
+  date            DateTime      @db.Timestamp(6)
+  user_id         String?       @db.Uuid
+  penalty_type    penalty_type? @relation(fields: [penalty_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_account    user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model penalty_type {
+  id          String    @id @db.Uuid
+  code        String
+  description String
+  penalty     penalty[]
+}
+
+model priority {
+  id               String             @id @db.Uuid
+  description      String
+  priority_history priority_history[]
+  ticket           ticket[]
+}
+
+model priority_history {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date         DateTime      @db.Timestamp(6)
+  author_id    String?       @db.Uuid
+  ticket_id    String?       @db.Uuid
+  priority_id  String?       @db.Uuid
+  user_account user_account? @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  priority     priority?     @relation(fields: [priority_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket       ticket?       @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model role {
+  id           String         @id @db.Uuid
+  description  role_enum
+  user_account user_account[]
+}
+
+model status_history {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date          DateTime       @db.Timestamp(6)
+  author_id     String?        @db.Uuid
+  ticket_id     String?        @db.Uuid
+  status_id     String?        @db.Uuid
+  user_account  user_account?  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket_status ticket_status? @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket        ticket?        @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model subscription {
+  id           String        @id @db.Uuid
+  user_id      String?       @db.Uuid
+  user_account user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model ticket {
+  id                                            String             @id @db.Uuid
+  description                                   String?            @db.VarChar(250)
+  latitude                                      Float?
+  longitude                                     Float?
+  timestamp                                     DateTime           @db.Timestamp(6)
+  created_by                                    String?            @db.Uuid
+  modified_by                                   String?            @db.Uuid
+  image_url                                     String?
+  status_id                                     String?            @db.Uuid
+  priority_id                                   String?            @db.Uuid
+  issue_id                                      String?            @db.Uuid
+  priority_history                              priority_history[]
+  status_history                                status_history[]
+  user_account_ticket_created_byTouser_account  user_account?      @relation("ticket_created_byTouser_account", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  issue                                         issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_account_ticket_modified_byTouser_account user_account?      @relation("ticket_modified_byTouser_account", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  priority                                      priority?          @relation(fields: [priority_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket_status                                 ticket_status?     @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model ticket_status {
+  id             String           @id @db.Uuid
+  description    String
+  status_history status_history[]
+  ticket         ticket[]
+}
+
+model user_account {
+  id                                      String             @id @db.Uuid
+  dni                                     BigInt
+  email                                   String
+  alternate_email                         String?
+  first_name                              String
+  last_name                               String
+  birth_date                              DateTime           @db.Date
+  postal_code                             Int
+  street                                  String
+  street_number                           Int
+  role_id                                 String?            @db.Uuid
+  dependency_id                           String?            @db.Uuid
+  penalty                                 penalty[]
+  priority_history                        priority_history[]
+  status_history                          status_history[]
+  subscription                            subscription[]
+  ticket_ticket_created_byTouser_account  ticket[]           @relation("ticket_created_byTouser_account")
+  ticket_ticket_modified_byTouser_account ticket[]           @relation("ticket_modified_byTouser_account")
+  dependency                              dependency?        @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role                                    role?              @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum municipal_dependency_enum {
+  Arbolado
+  AreasVerdes
+  Barrido
+  ConservacionDeCalles
+  Electrotecnia
+  EspaciosP_blicos                @map("EspaciosPúblicos")
+  Microbasurales
+  ObrasPrivadas
+  ObrasP_blicas                   @map("ObrasPúblicas")
+  OficinaTecnicaDeObrasSanitarias
+  Polic_aMunicipal                @map("PolicíaMunicipal")
+  Recolecci_n                     @map("Recolección")
+  RedDeAgua
+  RedDeCloacas
+  Riego
+  SaludAmbiental
+  Tr_nsito                        @map("Tránsito")
+}
+
+enum priority_level_enum {
+  Muy_Alta @map("Muy Alta")
+  Alta
+  Media
+  Baja
+}
+
+enum role_enum {
+  Operador_de_Atenci_n_al_vecino @map("Operador de Atención al vecino")
+  Ciudadano
+  Responsable_de_dependencia     @map("Responsable de dependencia")
+  Miembro_de_cuadrilla           @map("Miembro de cuadrilla")
+}
