@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from '@modules/entities/user.model';
-import { Ticket } from '@modules/entities/ticket.model';
+import { User } from '@modules/users/entities/user.entity';
+import { Ticket } from '@modules/ticket/entities/ticket.entity';
 import { Priority } from '@modules/entities/priority.model';
 
 @ObjectType()

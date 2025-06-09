@@ -1,6 +1,6 @@
 // src/modules/keycloak/keycloak.service.ts
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from '@modules/entities/user.model';
+import { User } from '@modules/users/entities/user.entity';
 import { UserRoles } from '@modules/enum/user_roles';
 import { PrismaService } from '@modules/prisma/prisma.service';
 import { Role } from '@modules/entities/rol.model';

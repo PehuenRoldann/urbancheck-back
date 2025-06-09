@@ -6,13 +6,13 @@ import {
   Mutation,
   Context,
 } from '@nestjs/graphql';
-import { User } from '@modules/entities/user.model';
+import { User } from '@modules/users/entities/user.entity';
 import { ErrorResponse } from '@modules/common/graphql/error.model';
 import { UsersService } from '@modules/users/users.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import {
   LazySyncUserInput,
-} from '@modules/graphql/user.input';
+} from '@modules/users/dto/user.input';
 import { UseGuards } from '@nestjs/common';
 import { KeycloakProfileGuard } from '@modules/common/keycloakProfile/keycloak_profile.guard';
 import { KeycloakService } from '@modules/common/keycloakProfile/keycloak_profile.service';

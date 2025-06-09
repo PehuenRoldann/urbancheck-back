@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
-import { User } from '@modules/entities/user.model';
+import { User } from '@modules/users/entities/user.entity';
 import { TicketStatus } from '@modules/entities/ticket_status.model';
 import { Priority } from '@modules/entities/priority.model';
 import { Issue } from 'modules/entities/issue.model';

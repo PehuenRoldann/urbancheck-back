@@ -1,10 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from '../entities/user.model';
+import { User } from './entities/user.entity';
 import { delay } from 'rxjs';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@modules/prisma/prisma.service';
-import { CreateUserInput } from '@modules/graphql/user.input';
+import { CreateUserInput } from '@modules/users/dto/user.input';
 import { EntityMapperService } from '@modules/utils/mapper/mapper.service';
 
 

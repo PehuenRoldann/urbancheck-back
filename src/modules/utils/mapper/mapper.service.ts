@@ -1,4 +1,4 @@
-import { User } from '@modules/entities/user.model';
+import { User } from '@modules/users/entities/user.entity';
 
 export class EntityMapperService {
   mapUserEntity(user: any): User {
