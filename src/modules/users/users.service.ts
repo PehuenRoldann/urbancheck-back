@@ -1,61 +1,83 @@
-import { Injectable } from '@nestjs/common';
-import { User } from '../entities/users.model';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { User } from '../entities/user.model';
 import { delay } from 'rxjs';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
-
-//------------ MOCK DATA --------------------
-export const USERS_MOCK_DATA: User[] = [
-    {
-      id: '1',
-      name: 'jdoe',
-      email: 'jdoe@example.com',
-      password: 'hashedpassword1',
-      dni: 12345678,
-      firstName: 'John',
-      lastName: 'Doe',
-      birthDate: new Date('1990-01-01'),
-      postalCode: 1000,
-      street: 'Main St',
-      streetNumber: 123,
-    },
-    {
-      id: '2',
-      name: 'mgarcia',
-      email: 'mgarcia@example.com',
-      password: 'hashedpassword2',
-      dni: 23456789,
-      firstName: 'Maria',
-      lastName: 'García',
-      birthDate: new Date('1985-07-15'),
-      postalCode: 2000,
-      street: 'Second Ave',
-      streetNumber: 456,
-    },
-  ];
-
+import { PrismaService } from '@modules/prisma/prisma.service';
+import { CreateUserInput } from '@modules/graphql/user.input';
+import { EntityMapperService } from '@modules/utils/mapper/mapper.service';
 
 
 @Injectable()
 export class UsersService {
+  constructor(
+    private readonly logger: CustomLogger,
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly entityMapper: EntityMapperService,
+  ) {}
 
-    constructor (
-        private readonly logger: CustomLogger,
-        private readonly configService: ConfigService
-    ) {}
+  async FindAll(): Promise<User[]> {
+    this.logger.log('UsersService - FindAll');
+    await delay(25000);
+    return [];
+  }
 
-    async FindAll (): Promise<User[]> {
+  async findOne(pId: string): Promise<User | undefined> {
+    this.logger.log(`UsersService - FindOne - id: ${pId}`);
+    await delay(2000);
+    return new User();
+  }
 
-        this.logger.log("UsersService - FindAll");
-        await delay(25000);
-        return USERS_MOCK_DATA;
+  async lazySync(data: User) {
+    this.logger.log(`UserService - crate - with {
+      authProviderId: ${data.authProviderId};
+      dni: ${data.dni};
+      email: ${data.email};
+      firstName: ${data.firstName};
+      lastName: ${data.lastName}
+      }`);
+    try {
+
+      const user = await this.prisma.user_account.findFirst({
+        where: {auth_provider_id: data.authProviderId}
+      }) ?? null;
+
+      if (user !== null) {
+        
+        this.logger.warn(`El usuario ya se encuentra sincronizado - 
+          keycloakId: ${data.authProviderId}; 
+          internalId: ${user.id};
+          email: ${user.email}
+          `);
+        
+        return this.entityMapper.mapUserEntity(user);
+        
+      }
+
+      const [newUser] = await this.prisma.$transaction([
+        this.prisma.user_account.create({
+          data: {
+            auth_provider_id: data.authProviderId,
+            dni: data.dni,
+            email: data.email,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            birth_date: data.birthDate,
+            postal_code: data.postalCode,
+            street: data.street,
+            street_number: data.streetNumber,
+            role: { connect: { id: data.roleId } },
+          },
+        }),
+      ]);
+
+      return this.entityMapper.mapUserEntity(newUser);
+    } catch (err) {
+      const error = err as Error;
+      this.logger.error(`UserService - lazySync - message: ${error.message}`, error.stack ?? 'No stack available');
+      throw err;
     }
+  }
 
-
-    async findOne (pId: string): Promise<User | undefined> {
-
-        this.logger.log(`UsersService - FindOne - id: ${pId}`);
-        await delay(2000);
-        return USERS_MOCK_DATA.find((user) => user.id === pId);
-    }
 }

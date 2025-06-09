@@ -5,7 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "postbuild": "cp -r src/generated dist/generated",
   "scripts": {
+    "prebuild": "prisma generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -30,6 +32,7 @@
     "apollo-server-express": "^3.13.0",
     "graphql": "^16.11.0",
     "graphql-tools": "^9.0.18",
+    "jose": "^6.0.11",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "winston": "^3.17.0"

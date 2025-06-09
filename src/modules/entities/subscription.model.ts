@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from '@modules/entities/users.model';
+import { User } from '@modules/entities/user.model';
 
 @ObjectType()
 export class Subscription {
@@ -8,4 +8,10 @@ export class Subscription {
 
   @Field(() => User)
   user: User;
+
+  @Field()
+  its: Date;
+
+  @Field({ nullable: true })
+  dts: Date;
 }

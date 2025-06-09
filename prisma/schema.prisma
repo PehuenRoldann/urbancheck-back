@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -9,14 +8,15 @@ datasource db {
 }
 
 model dependency {
-  id           String                    @id @db.Uuid
-  description  String
+  id           Int                       @id @default(autoincrement())
   name         municipal_dependency_enum
-  user_account user_account[]
+  is_operating Boolean?                  @default(false)
+  problematica problematica[]
+  works_at     works_at[]
 }
 
 model issue {
-  id          String   @id @db.Uuid
+  id          Int      @id @default(autoincrement())
   description String
   code        String
   enabled     Boolean
@@ -24,64 +24,77 @@ model issue {
 }
 
 model penalty {
-  id              String        @id @db.Uuid
-  penalty_type_id String?       @db.Uuid
-  date            DateTime      @db.Timestamp(6)
-  user_id         String?       @db.Uuid
-  penalty_type    penalty_type? @relation(fields: [penalty_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_account    user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id           Int           @id @default(autoincrement())
+  description  Int?
+  date         DateTime      @db.Timestamp(6)
+  user_id      String?       @db.Uuid
+  penalty_type penalty_type? @relation(fields: [description], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_account user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model penalty_type {
-  id          String    @id @db.Uuid
+  id          Int       @id @default(autoincrement())
   code        String
   description String
   penalty     penalty[]
 }
 
 model priority {
-  id               String             @id @db.Uuid
-  description      String
+  id               Int                 @id @default(autoincrement())
+  description      priority_level_enum
   priority_history priority_history[]
   ticket           ticket[]
 }
 
 model priority_history {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  date         DateTime      @db.Timestamp(6)
+  id           Int           @id @default(autoincrement())
   author_id    String?       @db.Uuid
   ticket_id    String?       @db.Uuid
-  priority_id  String?       @db.Uuid
+  priority_id  Int?
+  its          DateTime?     @default(now()) @db.Timestamptz(6)
   user_account user_account? @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   priority     priority?     @relation(fields: [priority_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ticket       ticket?       @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model problematica {
+  id            Int         @id @default(autoincrement())
+  description   String
+  code          String
+  enabled       Boolean
+  dependency_id Int?
+  dependency    dependency? @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
 model role {
-  id           String         @id @db.Uuid
+  id           Int            @id @default(autoincrement())
   description  role_enum
   user_account user_account[]
 }
 
 model status_history {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  date          DateTime       @db.Timestamp(6)
+  id            Int            @id @default(autoincrement())
   author_id     String?        @db.Uuid
   ticket_id     String?        @db.Uuid
-  status_id     String?        @db.Uuid
+  status_id     Int?
+  its           DateTime?      @default(now()) @db.Timestamptz(6)
   user_account  user_account?  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ticket_status ticket_status? @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ticket        ticket?        @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model subscription {
-  id           String        @id @db.Uuid
+  id           Int           @id @default(autoincrement())
   user_id      String?       @db.Uuid
+  ticket_id    String?       @db.Uuid
+  its          DateTime?     @default(now()) @db.Timestamptz(6)
+  dts          DateTime?     @db.Timestamptz(6)
+  ticket       ticket?       @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user_account user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model ticket {
-  id                                            String             @id @db.Uuid
+  id                                            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   description                                   String?            @db.VarChar(250)
   latitude                                      Float?
   longitude                                     Float?
@@ -89,11 +102,15 @@ model ticket {
   created_by                                    String?            @db.Uuid
   modified_by                                   String?            @db.Uuid
   image_url                                     String?
-  status_id                                     String?            @db.Uuid
-  priority_id                                   String?            @db.Uuid
-  issue_id                                      String?            @db.Uuid
+  status_id                                     Int?
+  priority_id                                   Int?
+  issue_id                                      Int?
+  its                                           DateTime?          @default(now()) @db.Timestamptz(6)
+  uts                                           DateTime?          @db.Timestamptz(6)
+  dts                                           DateTime?          @db.Timestamptz(6)
   priority_history                              priority_history[]
   status_history                                status_history[]
+  subscription                                  subscription[]
   user_account_ticket_created_byTouser_account  user_account?      @relation("ticket_created_byTouser_account", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   issue                                         issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user_account_ticket_modified_byTouser_account user_account?      @relation("ticket_modified_byTouser_account", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -102,53 +119,61 @@ model ticket {
 }
 
 model ticket_status {
-  id             String           @id @db.Uuid
-  description    String
+  id             Int                @id @default(autoincrement())
+  description    ticket_status_enum @unique
   status_history status_history[]
   ticket         ticket[]
 }
 
 model user_account {
-  id                                      String             @id @db.Uuid
+  id                                      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auth_provider_id                        String             @unique @db.Uuid
   dni                                     BigInt
   email                                   String
-  alternate_email                         String?
+  email_alt                               String?
   first_name                              String
   last_name                               String
   birth_date                              DateTime           @db.Date
-  postal_code                             Int
-  street                                  String
-  street_number                           Int
-  role_id                                 String?            @db.Uuid
-  dependency_id                           String?            @db.Uuid
+  postal_code                             Int?
+  street                                  String?
+  street_number                           Int?
+  is_resident                             Boolean?           @default(true)
+  role_id                                 Int
+  its                                     DateTime?          @default(now()) @db.Timestamp(6)
+  uts                                     DateTime?          @db.Timestamp(6)
+  dts                                     DateTime?          @db.Timestamp(6)
   penalty                                 penalty[]
   priority_history                        priority_history[]
   status_history                          status_history[]
   subscription                            subscription[]
   ticket_ticket_created_byTouser_account  ticket[]           @relation("ticket_created_byTouser_account")
   ticket_ticket_modified_byTouser_account ticket[]           @relation("ticket_modified_byTouser_account")
-  dependency                              dependency?        @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  role                                    role?              @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role                                    role               @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  works_at                                works_at[]
+}
+
+model works_at {
+  id            Int          @id @default(autoincrement())
+  user_id       String       @db.Uuid
+  dependency_id Int
+  started       DateTime?    @db.Date
+  ended         DateTime?    @db.Date
+  dependency    dependency   @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_account  user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum municipal_dependency_enum {
-  Arbolado
-  AreasVerdes
-  Barrido
-  ConservacionDeCalles
-  Electrotecnia
-  EspaciosP_blicos                @map("EspaciosPúblicos")
-  Microbasurales
-  ObrasPrivadas
-  ObrasP_blicas                   @map("ObrasPúblicas")
-  OficinaTecnicaDeObrasSanitarias
-  Polic_aMunicipal                @map("PolicíaMunicipal")
-  Recolecci_n                     @map("Recolección")
-  RedDeAgua
-  RedDeCloacas
-  Riego
-  SaludAmbiental
-  Tr_nsito                        @map("Tránsito")
+  Arboldado_urbano                       @map("Arboldado urbano")
+  Alumbrado_p_blico                      @map("Alumbrado público")
+  Mantenimiento_de_cloaca_y_agua_potable @map("Mantenimiento de cloaca y agua potable")
+  Recolecci_n_de_residuos                @map("Recolección de residuos")
+  Liempieza_de_calles                    @map("Liempieza de calles")
+  Distribuci_n_de_reigo_y_agua_potable   @map("Distribución de reigo y agua potable")
+  Control_urbano_y_de_tr_nsito           @map("Control urbano y de tránsito")
+  Veh_culos_abandonados                  @map("Vehículos abandonados")
+  Conservaci_n_de_espacios_p_blicos      @map("Conservación de espacios públicos")
+  Atenci_n_sanitaria_de_animales         @map("Atención sanitaria de animales")
+  Control_industrial_y_de_plagas         @map("Control industrial y de plagas")
 }
 
 enum priority_level_enum {
@@ -163,4 +188,16 @@ enum role_enum {
   Ciudadano
   Responsable_de_dependencia     @map("Responsable de dependencia")
   Miembro_de_cuadrilla           @map("Miembro de cuadrilla")
+}
+
+enum ticket_status_enum {
+  Pendiente
+  V_lido      @map("Válido")
+  Programada
+  Resuelto
+  Finalizado
+  Cuestionada
+  Rechazado
+  Derivado
+  Cancelado
 }

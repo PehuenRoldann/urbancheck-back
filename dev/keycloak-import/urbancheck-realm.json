@@ -89,6 +89,20 @@
             "claim.name": "streetNumber",
             "jsonType.label": "String"
           }
+        },
+        {
+          "name": "birthDate",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "birthDate",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "birthDate",
+            "jsonType.label": "String"
+          }
         }
       ]
     },
@@ -117,6 +131,6 @@
     "auth": "true",
     "starttls": "true",
     "user": "pruebaspehuen@gmail.com",
-    "password": "wflaeqxtupwixqhh"
+    "password": "insert_your_password"
   }
 }

@@ -7,4 +7,7 @@ export class TicketStatus {
 
   @Field()
   description: string;
+
+  @Field()
+  its: Date;
 }

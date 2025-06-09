@@ -40,6 +40,12 @@
       </div>
 
       <div class="form-group">
+        <label for="user.attributes.birthDate" class="control-label">Fecha de nacimiento</label>
+        <input type="date" id="user.attributes.birthDate" name="user.attributes.birthDate" class="form-control" lang="es" />
+      </div>
+
+
+      <div class="form-group">
         <label for="user.attributes.postalCode" class="control-label">Código Postal</label>
         <input type="text" id="user.attributes.postalCode" name="user.attributes.postalCode" class="form-control" />
       </div>

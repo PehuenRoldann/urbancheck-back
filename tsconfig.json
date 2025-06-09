@@ -17,7 +17,8 @@
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types"],
     "paths": {
-      "@modules/*": ["modules/*"]
+      "@modules/*": ["modules/*"],
+      "@prisma/*": ["generated/prisma/*"]
     }
   }
 }

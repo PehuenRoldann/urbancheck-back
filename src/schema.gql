@@ -4,16 +4,19 @@
 
 type User {
   id: ID!
-  name: String!
+  authProviderId: ID!
   email: String!
-  password: String!
-  dni: Float!
+  dni: Int!
   firstName: String!
   lastName: String!
   birthDate: DateTime!
-  postalCode: Float!
-  street: String!
-  streetNumber: Float!
+  postalCode: Int
+  street: String
+  streetNumber: Int
+  roleId: ID!
+  its: DateTime!
+  uts: DateTime
+  dts: DateTime
 }
 
 """
@@ -32,4 +35,12 @@ type ErrorResponse {
   message: String!
   code: String
   path: String
+}
+
+type Mutation {
+  lazySyncUser(input: LazySyncUserInput!): UserResult!
+}
+
+input LazySyncUserInput {
+  auth_provider_id: ID!
 }
