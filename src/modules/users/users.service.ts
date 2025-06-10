@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from './entities/user.entity';
-import { delay } from 'rxjs';
+import { User } from '@modules/entities/user.entity';
+import { delay, NotFoundError } from 'rxjs';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@modules/prisma/prisma.service';
@@ -29,24 +29,41 @@ export class UsersService {
     return new User();
   }
 
+  async findByAuthId (pAuthId: string): Promise<User> {
+
+    const user = await this.prisma.user_account.findFirst(
+      {
+        where: {auth_provider_id: pAuthId},
+        include: {role: true}
+      },
+    );
+
+    if (user) {
+      return this.entityMapper.mapUserEntity(user);
+    }
+
+    throw new ForbiddenException(`UserService - findByAuthId - No se encuentra un usuario con authId: ${pAuthId}`);
+
+  }
+
   async lazySync(data: User) {
     this.logger.log(`UserService - crate - with {
-      authProviderId: ${data.authProviderId};
+      authProviderId: ${data.auth_provider_id};
       dni: ${data.dni};
       email: ${data.email};
-      firstName: ${data.firstName};
-      lastName: ${data.lastName}
+      firstName: ${data.first_name};
+      lastName: ${data.last_name}
       }`);
     try {
 
       const user = await this.prisma.user_account.findFirst({
-        where: {auth_provider_id: data.authProviderId}
+        where: {auth_provider_id: data.auth_provider_id}
       }) ?? null;
 
       if (user !== null) {
         
         this.logger.warn(`El usuario ya se encuentra sincronizado - 
-          keycloakId: ${data.authProviderId}; 
+          keycloakId: ${data.auth_provider_id}; 
           internalId: ${user.id};
           email: ${user.email}
           `);
@@ -58,26 +75,30 @@ export class UsersService {
       const [newUser] = await this.prisma.$transaction([
         this.prisma.user_account.create({
           data: {
-            auth_provider_id: data.authProviderId,
+            auth_provider_id: data.auth_provider_id,
             dni: data.dni,
             email: data.email,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            birth_date: data.birthDate,
-            postal_code: data.postalCode,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            birth_date: data.birth_date,
+            postal_code: data.postal_code,
             street: data.street,
-            street_number: data.streetNumber,
-            role: { connect: { id: data.roleId } },
+            street_number: data.street_number,
+            role: { connect: { id: data.role.id } },
           },
+          include: {role: true},
         }),
       ]);
 
-      return this.entityMapper.mapUserEntity(newUser);
+      const userToReturn: User = newUser as User;
+      // return this.entityMapper.mapUserEntity(newUser);
+      return userToReturn;
     } catch (err) {
       const error = err as Error;
       this.logger.error(`UserService - lazySync - message: ${error.message}`, error.stack ?? 'No stack available');
       throw err;
     }
   }
+
 
 }

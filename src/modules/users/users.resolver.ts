@@ -6,7 +6,7 @@ import {
   Mutation,
   Context,
 } from '@nestjs/graphql';
-import { User } from '@modules/users/entities/user.entity';
+import { User } from '@modules/entities/user.entity';
 import { ErrorResponse } from '@modules/common/graphql/error.model';
 import { UsersService } from '@modules/users/users.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';

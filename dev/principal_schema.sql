@@ -76,9 +76,9 @@ CREATE TABLE penalty_type (
   description TEXT NOT NULL
 );
 
-CREATE TABLE penalty (
+CREATE TABLE user_penalty (
   id SERIAL PRIMARY KEY,
-  description INT REFERENCES penalty_type(id),
+  penalty_type_id INT REFERENCES penalty_type(id),
   date TIMESTAMP NOT NULL,
   user_id UUID REFERENCES user_account(id)
 );
@@ -94,13 +94,6 @@ CREATE TABLE priority (
 );
 
 CREATE TABLE issue (
-  id SERIAL PRIMARY KEY,
-  description TEXT NOT NULL,
-  code TEXT NOT NULL,
-  enabled BOOLEAN NOT NULL
-);
-
-CREATE TABLE problematica (
   id SERIAL PRIMARY KEY,
   description TEXT NOT NULL,
   code TEXT NOT NULL,
@@ -208,3 +201,39 @@ INSERT INTO priority (description) VALUES
   ('Alta'),
   ('Media'),
   ('Baja');
+
+-- Problemáticas
+INSERT INTO issue (description, code, enabled, dependency_id) VALUES
+  ('Arboldado urbano', 'arboldado_urbano', true, 1),
+  ('Alumbrado público', 'alumbrado_publico', true, 2),
+  ('Mantenimiento de cloaca y agua potable', 'mantenimiento_cloaca_agua', true, 3),
+  ('Recolección de residuos', 'recoleccion_residuos', true, 4),
+  ('Liempieza de calles', 'limpieza_calles', true, 5),
+  ('Distribución de reigo y agua potable', 'distribucion_riego_agua', true, 6),
+  ('Control urbano y de tránsito', 'control_urbano_transito', true, 7),
+  ('Vehículos abandonados', 'vehiculos_abandonados', true, 8),
+  ('Conservación de espacios públicos', 'conservacion_espacios_publicos', true, 9),
+  ('Atención sanitaria de animales', 'atencion_animales', true, 10),
+  ('Control industrial y de plagas', 'control_plagas_industrial', true, 11);
+
+-- Eliminar columnas duplicadas en la tabla ticket
+ALTER TABLE ticket
+  DROP COLUMN IF EXISTS status_id,
+  DROP COLUMN IF EXISTS priority_id;
+
+-- Innecesario con historial
+ALTER TABLE urbancheck_back.ticket DROP CONSTRAINT ticket_created_by_fkey;
+ALTER TABLE urbancheck_back.ticket DROP CONSTRAINT ticket_modified_by_fkey;
+ALTER TABLE urbancheck_back.ticket DROP COLUMN created_by;
+ALTER TABLE urbancheck_back.ticket DROP COLUMN modified_by;
+
+
+-- Set not null para historial de estados
+ALTER TABLE status_history
+  ALTER COLUMN its SET NOT NULL,
+  alter column status_id set not null,
+  alter column ticket_id set not null,
+  ALTER COLUMN author_id SET NOT NULL;
+
+
+

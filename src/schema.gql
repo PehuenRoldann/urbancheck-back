@@ -24,9 +24,43 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type TicketStatus {
+  id: ID!
+  description: String!
+  its: DateTime!
+}
+
+type Priority {
+  id: ID!
+  description: String!
+}
+
+type Issue {
+  id: ID!
+  description: String!
+  code: String!
+  enabled: Boolean!
+}
+
+type Ticket {
+  id: ID!
+  description: String!
+  latitude: Float!
+  longitude: Float!
+  timestamp: DateTime!
+  createdBy: User!
+  modifiedBy: User!
+  imageUrl: String!
+  status: TicketStatus!
+  priority: Priority!
+  issue: Issue!
+}
+
 type Query {
   findAll: [User!]!
   user(id: String!): UserResult!
+  tickets: [Ticket!]!
+  ticket(id: Int!): Ticket!
 }
 
 union UserResult = User | ErrorResponse
@@ -39,8 +73,22 @@ type ErrorResponse {
 
 type Mutation {
   lazySyncUser(input: LazySyncUserInput!): UserResult!
+  createTicket(createTicketInput: CreateTicketInput!): Ticket!
+  updateTicket(updateTicketInput: UpdateTicketInput!): Ticket!
+  removeTicket(id: Int!): Ticket!
 }
 
 input LazySyncUserInput {
   auth_provider_id: ID!
+}
+
+input CreateTicketInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateTicketInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }

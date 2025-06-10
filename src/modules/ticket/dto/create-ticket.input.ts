@@ -1,7 +1,28 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Int, Field, Float } from '@nestjs/graphql';
 
 @InputType()
 export class CreateTicketInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field()
+  description: string;
+
+  @Field(() => Float)
+  latitude: number;
+
+  @Field(() => Float)
+  longitude: number;
+
+  @Field()
+  timestamp: Date;
+  
+  @Field({nullable: true})
+  imageUrl?: string;
+
+  @Field(() => Int, {nullable: true})
+  statusId?: number;
+
+  @Field(() => Int, {nullable: true})
+  priorityId?: number;
+
+  @Field(() => Int, {nullable: true})
+  issueId?: number;
 }

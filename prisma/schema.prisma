@@ -11,39 +11,31 @@ model dependency {
   id           Int                       @id @default(autoincrement())
   name         municipal_dependency_enum
   is_operating Boolean?                  @default(false)
-  problematica problematica[]
+  issue        issue[]
   works_at     works_at[]
 }
 
 model issue {
-  id          Int      @id @default(autoincrement())
-  description String
-  code        String
-  enabled     Boolean
-  ticket      ticket[]
-}
-
-model penalty {
-  id           Int           @id @default(autoincrement())
-  description  Int?
-  date         DateTime      @db.Timestamp(6)
-  user_id      String?       @db.Uuid
-  penalty_type penalty_type? @relation(fields: [description], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_account user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id            Int         @id @default(autoincrement())
+  description   String
+  code          String
+  enabled       Boolean
+  dependency_id Int?
+  dependency    dependency? @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket        ticket[]
 }
 
 model penalty_type {
-  id          Int       @id @default(autoincrement())
-  code        String
-  description String
-  penalty     penalty[]
+  id           Int            @id @default(autoincrement())
+  code         String
+  description  String
+  user_penalty user_penalty[]
 }
 
 model priority {
   id               Int                 @id @default(autoincrement())
   description      priority_level_enum
   priority_history priority_history[]
-  ticket           ticket[]
 }
 
 model priority_history {
@@ -57,15 +49,6 @@ model priority_history {
   ticket       ticket?       @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model problematica {
-  id            Int         @id @default(autoincrement())
-  description   String
-  code          String
-  enabled       Boolean
-  dependency_id Int?
-  dependency    dependency? @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
 model role {
   id           Int            @id @default(autoincrement())
   description  role_enum
@@ -73,14 +56,14 @@ model role {
 }
 
 model status_history {
-  id            Int            @id @default(autoincrement())
-  author_id     String?        @db.Uuid
-  ticket_id     String?        @db.Uuid
-  status_id     Int?
-  its           DateTime?      @default(now()) @db.Timestamptz(6)
-  user_account  user_account?  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ticket_status ticket_status? @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ticket        ticket?        @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id            Int           @id @default(autoincrement())
+  author_id     String        @db.Uuid
+  ticket_id     String        @db.Uuid
+  status_id     Int
+  its           DateTime      @default(now()) @db.Timestamptz(6)
+  user_account  user_account  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket_status ticket_status @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket        ticket        @relation(fields: [ticket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model subscription {
@@ -94,62 +77,51 @@ model subscription {
 }
 
 model ticket {
-  id                                            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description                                   String?            @db.VarChar(250)
-  latitude                                      Float?
-  longitude                                     Float?
-  timestamp                                     DateTime           @db.Timestamp(6)
-  created_by                                    String?            @db.Uuid
-  modified_by                                   String?            @db.Uuid
-  image_url                                     String?
-  status_id                                     Int?
-  priority_id                                   Int?
-  issue_id                                      Int?
-  its                                           DateTime?          @default(now()) @db.Timestamptz(6)
-  uts                                           DateTime?          @db.Timestamptz(6)
-  dts                                           DateTime?          @db.Timestamptz(6)
-  priority_history                              priority_history[]
-  status_history                                status_history[]
-  subscription                                  subscription[]
-  user_account_ticket_created_byTouser_account  user_account?      @relation("ticket_created_byTouser_account", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  issue                                         issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_account_ticket_modified_byTouser_account user_account?      @relation("ticket_modified_byTouser_account", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  priority                                      priority?          @relation(fields: [priority_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ticket_status                                 ticket_status?     @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description      String?            @db.VarChar(250)
+  latitude         Float?
+  longitude        Float?
+  timestamp        DateTime           @db.Timestamp(6)
+  image_url        String?
+  issue_id         Int?
+  its              DateTime?          @default(now()) @db.Timestamptz(6)
+  uts              DateTime?          @db.Timestamptz(6)
+  dts              DateTime?          @db.Timestamptz(6)
+  priority_history priority_history[]
+  status_history   status_history[]
+  subscription     subscription[]
+  issue            issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model ticket_status {
   id             Int                @id @default(autoincrement())
   description    ticket_status_enum @unique
   status_history status_history[]
-  ticket         ticket[]
 }
 
 model user_account {
-  id                                      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  auth_provider_id                        String             @unique @db.Uuid
-  dni                                     BigInt
-  email                                   String
-  email_alt                               String?
-  first_name                              String
-  last_name                               String
-  birth_date                              DateTime           @db.Date
-  postal_code                             Int?
-  street                                  String?
-  street_number                           Int?
-  is_resident                             Boolean?           @default(true)
-  role_id                                 Int
-  its                                     DateTime?          @default(now()) @db.Timestamp(6)
-  uts                                     DateTime?          @db.Timestamp(6)
-  dts                                     DateTime?          @db.Timestamp(6)
-  penalty                                 penalty[]
-  priority_history                        priority_history[]
-  status_history                          status_history[]
-  subscription                            subscription[]
-  ticket_ticket_created_byTouser_account  ticket[]           @relation("ticket_created_byTouser_account")
-  ticket_ticket_modified_byTouser_account ticket[]           @relation("ticket_modified_byTouser_account")
-  role                                    role               @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  works_at                                works_at[]
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auth_provider_id String             @unique @db.Uuid
+  dni              BigInt
+  email            String
+  email_alt        String?
+  first_name       String
+  last_name        String
+  birth_date       DateTime           @db.Date
+  postal_code      Int?
+  street           String?
+  street_number    Int?
+  is_resident      Boolean?           @default(true)
+  role_id          Int
+  its              DateTime?          @default(now()) @db.Timestamp(6)
+  uts              DateTime?          @db.Timestamp(6)
+  dts              DateTime?          @db.Timestamp(6)
+  priority_history priority_history[]
+  status_history   status_history[]
+  subscription     subscription[]
+  role             role               @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_penalty     user_penalty[]
+  works_at         works_at[]
 }
 
 model works_at {
@@ -160,6 +132,15 @@ model works_at {
   ended         DateTime?    @db.Date
   dependency    dependency   @relation(fields: [dependency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user_account  user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_penalty {
+  id              Int           @id @default(autoincrement())
+  penalty_type_id Int?
+  date            DateTime      @db.Timestamp(6)
+  user_id         String?       @db.Uuid
+  penalty_type    penalty_type? @relation(fields: [penalty_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_account    user_account? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum municipal_dependency_enum {

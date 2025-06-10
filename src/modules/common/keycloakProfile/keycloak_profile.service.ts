@@ -1,9 +1,9 @@
 // src/modules/keycloak/keycloak.service.ts
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from '@modules/users/entities/user.entity';
-import { UserRoles } from '@modules/enum/user_roles';
+import { User } from '@modules/entities/user.entity';
+import { UserRoles } from '@modules/enum/enums';
 import { PrismaService } from '@modules/prisma/prisma.service';
-import { Role } from '@modules/entities/rol.model';
+import { Role } from '@modules/entities/rol.entity';
 import { CustomLogger } from '../logger/logger.service';
 
 @Injectable()
@@ -37,7 +37,7 @@ export class KeycloakService {
 
     const user: User = {
       id: '',
-      authProviderId: profile.sub,
+      auth_provider_id: profile.sub,
       email: profile.email,
       dni: parseInt(profile.dni),
       firstName: profile.firstName,
@@ -50,7 +50,7 @@ export class KeycloakService {
       streetNumber: profile.streetNumber
         ? parseInt(profile.streetNumber)
         : null,
-      roleId:   roleData.id,
+      role:   roleData.id,
       its: new Date(),
       uts: null,
       dts: null,
