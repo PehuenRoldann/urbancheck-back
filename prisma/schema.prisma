@@ -102,7 +102,7 @@ model ticket_status {
 model user_account {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   auth_provider_id String             @unique @db.Uuid
-  dni              BigInt
+  dni              String
   email            String
   email_alt        String?
   first_name       String

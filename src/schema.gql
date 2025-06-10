@@ -2,21 +2,27 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
+type Priority {
   id: ID!
-  authProviderId: ID!
-  email: String!
-  dni: Int!
-  firstName: String!
-  lastName: String!
-  birthDate: DateTime!
-  postalCode: Int
-  street: String
-  streetNumber: Int
-  roleId: ID!
+  description: String!
+  priority_history: [PriorityHistory!]!
+}
+
+type TicketStatus {
+  id: ID!
+  description: String!
+  status_history: [StatusHistory!]!
+}
+
+type StatusHistory {
+  id: ID!
   its: DateTime!
-  uts: DateTime
-  dts: DateTime
+  author_id: ID!
+  ticket_id: ID!
+  status_id: ID!
+  user_account: User!
+  ticket: Ticket!
+  status: TicketStatus!
 }
 
 """
@@ -24,15 +30,20 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type TicketStatus {
+type Subscription {
   id: ID!
-  description: String!
-  its: DateTime!
+  user_account: User
+  ticket: Ticket
+  its: DateTime
+  dts: DateTime
 }
 
-type Priority {
+type Dependency {
   id: ID!
-  description: String!
+  name: String!
+  is_operationg: Boolean!
+  problematica: [Issue!]!
+  works_at: [User!]!
 }
 
 type Issue {
@@ -40,27 +51,100 @@ type Issue {
   description: String!
   code: String!
   enabled: Boolean!
+  dependency_id: ID
+  dependency: [Dependency!]!
+  ticket: [Ticket!]!
 }
 
 type Ticket {
   id: ID!
-  description: String!
-  latitude: Float!
-  longitude: Float!
+  description: String
+  latitude: Float
+  longitude: Float
   timestamp: DateTime!
-  createdBy: User!
-  modifiedBy: User!
-  imageUrl: String!
-  status: TicketStatus!
-  priority: Priority!
-  issue: Issue!
+  image_url: String
+  issue: Issue
+  its: DateTime
+  uts: DateTime
+  dts: DateTime
+  priority_history: [PriorityHistory!]!
+  status_history: [StatusHistory!]!
+  subscription: [Subscription!]!
+}
+
+type PriorityHistory {
+  id: ID!
+  author_id: ID
+  ticket_id: ID
+  priority: Priority
+  user_account: User
+  ticket: Ticket
+  its: DateTime
+}
+
+type Role {
+  id: ID!
+  description: String!
+  user_account: [User!]!
+}
+
+type PenaltyType {
+  id: ID!
+  code: String!
+  description: String!
+  user_penalty: [UserPenalty!]!
+}
+
+type UserPenalty {
+  id: Int!
+  penalty_type_id: Int
+  date: DateTime!
+  user_id: ID
+  penalty_type: PenaltyType
+  user_account: User
+}
+
+type WorksAt {
+  id: Int!
+  user_id: ID!
+  dependency_id: Int!
+  started: DateTime
+  ended: DateTime
+  dependency: Dependency!
+  user_account: User!
+}
+
+type User {
+  id: ID!
+  auth_provider_id: ID!
+  dni: String!
+  email: String!
+  email_alt: String
+  first_name: String!
+  last_name: String!
+  birth_date: DateTime!
+  postal_code: Int
+  street: String
+  street_number: Int
+  is_resident: Boolean
+  role_id: Int!
+  its: DateTime
+  uts: DateTime
+  dts: DateTime
+  role: Role!
+  priority_history: [PriorityHistory!]!
+  status_history: [StatusHistory!]!
+  subscription: [Subscription!]!
+  user_penalty: [UserPenalty!]!
+  works_at: [WorksAt!]!
 }
 
 type Query {
   findAll: [User!]!
   user(id: String!): UserResult!
+  findTickets(filter: TicketFilterInput): [Ticket!]!
   tickets: [Ticket!]!
-  ticket(id: Int!): Ticket!
+  ticket(id: String!): Ticket!
 }
 
 union UserResult = User | ErrorResponse
@@ -71,24 +155,43 @@ type ErrorResponse {
   path: String
 }
 
+input TicketFilterInput {
+  user_id: ID
+  status_id: Int
+  priority_id: Int
+  dependency_id: Int
+}
+
 type Mutation {
   lazySyncUser(input: LazySyncUserInput!): UserResult!
-  createTicket(createTicketInput: CreateTicketInput!): Ticket!
+  createTicket(input: CreateTicketInput!): TicketResult!
   updateTicket(updateTicketInput: UpdateTicketInput!): Ticket!
-  removeTicket(id: Int!): Ticket!
+  removeTicket(id: String!): Ticket!
 }
 
 input LazySyncUserInput {
   auth_provider_id: ID!
 }
 
+union TicketResult = Ticket | ErrorResponse
+
 input CreateTicketInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  description: String!
+  latitude: Float!
+  longitude: Float!
+  imageUrl: String
+  statusId: Int
+  priorityId: Int
+  issueId: Int
 }
 
 input UpdateTicketInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  description: String
+  latitude: Float
+  longitude: Float
+  imageUrl: String
+  statusId: Int
+  priorityId: Int
+  issueId: Int
+  id: ID!
 }

@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int, Float } from '@nestjs/graphql';
 import { PriorityHistory } from '@modules/entities/priority_history.entity';
 import { StatusHistory } from '@modules/entities/status_history.entity';
 import { Subscription } from '@modules/entities/subscription.entity';
@@ -14,8 +14,8 @@ export class User {
   @Field(() => ID)
   auth_provider_id: string;
 
-  @Field(() => BigInt)
-  dni: bigint; // Si querés que sea compatible con GraphQL, podés usar `String` en lugar de `bigint`
+  @Field(() => String)
+  dni: string;
 
   @Field()
   email: string;

@@ -236,4 +236,8 @@ ALTER TABLE status_history
   ALTER COLUMN author_id SET NOT NULL;
 
 
+-- cambio dni de bigint a string
+ALTER TABLE user_account
+ALTER COLUMN dni TYPE TEXT USING dni::TEXT;
+
 

@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Penalty } from './user_penalty.entity';
+import { UserPenalty } from './user_penalty.entity';
 
 @ObjectType()
 export class PenaltyType {
@@ -13,8 +13,8 @@ export class PenaltyType {
   @Field()
   description: string;
 
-  @Field(() => [Penalty])
-  user_penalty: Penalty[];
+  @Field(() => [UserPenalty])
+  user_penalty: UserPenalty[];
 
 
 }

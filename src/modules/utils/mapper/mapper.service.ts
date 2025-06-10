@@ -4,7 +4,7 @@ import { issue, priority, ticket, ticket_status, user_account } from '@prisma/cl
 
 export class EntityMapperService {
   mapUserEntity(user: any): User {
-    return {
+    /* return {
       id: user.id,
       auth_provider_id: user.auth_provider_id,
       dni: user.dni,
@@ -19,7 +19,9 @@ export class EntityMapperService {
       its: user.its,
       uts: user.uts,
       dts: user.dts,
-    };
+    }; */
+
+    return new User();
   }
 
 

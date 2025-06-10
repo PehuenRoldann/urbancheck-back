@@ -39,7 +39,7 @@ export class UsersService {
     );
 
     if (user) {
-      return this.entityMapper.mapUserEntity(user);
+      return user as unknown as User;
     }
 
     throw new ForbiddenException(`UserService - findByAuthId - No se encuentra un usuario con authId: ${pAuthId}`);
@@ -57,7 +57,10 @@ export class UsersService {
     try {
 
       const user = await this.prisma.user_account.findFirst({
-        where: {auth_provider_id: data.authProviderId}
+        where: {auth_provider_id: data.authProviderId},
+        include:{
+          role: true,
+        }
       }) ?? null;
 
       if (user !== null) {
@@ -68,7 +71,7 @@ export class UsersService {
           email: ${user.email}
           `);
         
-        return this.entityMapper.mapUserEntity(user);
+        return user as unknown as User;
         
       }
 
@@ -76,7 +79,7 @@ export class UsersService {
         this.prisma.user_account.create({
           data: {
             auth_provider_id: data.authProviderId,
-            dni: BigInt(data.dni),
+            dni: data.dni,
             email: data.email,
             first_name: data.firstName,
             last_name: data.lastName,

@@ -10,9 +10,6 @@ export class CreateTicketInput {
 
   @Field(() => Float)
   longitude: number;
-
-  @Field()
-  timestamp: Date;
   
   @Field({nullable: true})
   imageUrl?: string;
