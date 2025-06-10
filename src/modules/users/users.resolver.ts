@@ -76,8 +76,8 @@ export class UsersResolver {
         );
       }
 
-      const user = await this.keycloakService.mapKeycloakProfileToUser(userProfile);
-      const resposne = await this.usersService.lazySync(user);
+      const userCreateInput = await this.keycloakService.mapKeycloakProfileToUser(userProfile);
+      const resposne = await this.usersService.lazySync(userCreateInput);
       return resposne;
     } catch (err) {
       this.logger.error(`UsersResolver - create - ${err}`);

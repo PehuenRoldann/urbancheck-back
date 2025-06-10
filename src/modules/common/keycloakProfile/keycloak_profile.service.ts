@@ -3,8 +3,9 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { User } from '@modules/entities/user.entity';
 import { UserRoles } from '@modules/enum/enums';
 import { PrismaService } from '@modules/prisma/prisma.service';
-import { Role } from '@modules/entities/rol.entity';
+import { Role } from '@modules/entities/role.entity';
 import { CustomLogger } from '../logger/logger.service';
+import { CreateUserInput } from '@modules/users/dto/user.input';
 
 @Injectable()
 export class KeycloakService {
@@ -14,7 +15,7 @@ export class KeycloakService {
     private readonly logger: CustomLogger
   ) {}
 
-  async mapKeycloakProfileToUser(profile: any): Promise<User> {
+  async mapKeycloakProfileToUser(profile: any): Promise<any> {
 
     const realm_profile_roles = profile.realm_access.roles as Array<string>;
     const urbancheck_roles = Object.values(UserRoles);
@@ -35,11 +36,10 @@ export class KeycloakService {
         keycloakId: ${profile.sub}; rol: ${profile_role_name}`);
     }
 
-    const user: User = {
-      id: '',
-      auth_provider_id: profile.sub,
+    const userData: CreateUserInput = {
+      authProviderId: profile.sub,
       email: profile.email,
-      dni: parseInt(profile.dni),
+      dni: profile.dni,
       firstName: profile.firstName,
       lastName: profile.lastName,
       birthDate: new Date(profile.birthDate),
@@ -50,12 +50,9 @@ export class KeycloakService {
       streetNumber: profile.streetNumber
         ? parseInt(profile.streetNumber)
         : null,
-      role:   roleData.id,
-      its: new Date(),
-      uts: null,
-      dts: null,
+      roleId:   roleData.id,
     };
 
-    return user;
+    return userData;
   }
 }

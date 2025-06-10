@@ -46,24 +46,24 @@ export class UsersService {
 
   }
 
-  async lazySync(data: User) {
+  async lazySync(data: CreateUserInput) {
     this.logger.log(`UserService - crate - with {
-      authProviderId: ${data.auth_provider_id};
+      authProviderId: ${data.authProviderId};
       dni: ${data.dni};
       email: ${data.email};
-      firstName: ${data.first_name};
-      lastName: ${data.last_name}
+      firstName: ${data.firstName};
+      lastName: ${data.lastName}
       }`);
     try {
 
       const user = await this.prisma.user_account.findFirst({
-        where: {auth_provider_id: data.auth_provider_id}
+        where: {auth_provider_id: data.authProviderId}
       }) ?? null;
 
       if (user !== null) {
         
         this.logger.warn(`El usuario ya se encuentra sincronizado - 
-          keycloakId: ${data.auth_provider_id}; 
+          keycloakId: ${data.authProviderId}; 
           internalId: ${user.id};
           email: ${user.email}
           `);
@@ -75,16 +75,16 @@ export class UsersService {
       const [newUser] = await this.prisma.$transaction([
         this.prisma.user_account.create({
           data: {
-            auth_provider_id: data.auth_provider_id,
-            dni: data.dni,
+            auth_provider_id: data.authProviderId,
+            dni: BigInt(data.dni),
             email: data.email,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            birth_date: data.birth_date,
-            postal_code: data.postal_code,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            birth_date: data.birthDate,
+            postal_code: data.postalCode,
             street: data.street,
-            street_number: data.street_number,
-            role: { connect: { id: data.role.id } },
+            street_number: data.streetNumber,
+            role: { connect: { id: data.roleId } },
           },
           include: {role: true},
         }),

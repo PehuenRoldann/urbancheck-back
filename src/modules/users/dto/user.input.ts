@@ -5,8 +5,8 @@ export class CreateUserInput {
   @Field(() => ID)
   authProviderId: string;
 
-  @Field(() => Number)
-  dni: number;
+  @Field(() => String)
+  dni: string;
 
   @Field(() => String)
   email: string;
@@ -30,7 +30,7 @@ export class CreateUserInput {
   streetNumber?: number | null;
 
   @Field(() => ID)
-  roleId: string;
+  roleId: number;
 }
 
 @InputType()
