@@ -9,6 +9,7 @@ import { UsersService } from '@modules/users/users.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ErrorResponse } from '@modules/common/graphql/error.model';
 import { TicketFilterInput } from './dto/filter-ticket.input';
+import { User } from '@modules/entities/user.entity';
 
 export const TicketResult = createUnionType({
   name: 'TicketResult',
@@ -66,9 +67,11 @@ export class TicketResolver {
   }
 
   @Query(() => Ticket, { name: 'ticket' })
-  findOne(@Args('id', { type: () => String }) id: string) {
-    return this.ticketService.findOne(id);
+  @UseGuards(KeycloakProfileGuard)
+  async findOne(@Args('id', { type: () => String }) id: string) {
+    return await this.ticketService.findOne(id);
   }
+
 
   @Mutation(() => Ticket)
   updateTicket(@Args('updateTicketInput') updateTicketInput: UpdateTicketInput) {

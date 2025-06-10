@@ -22,7 +22,7 @@ type StatusHistory {
   status_id: ID!
   user_account: User!
   ticket: Ticket!
-  status: TicketStatus!
+  ticket_status: TicketStatus!
 }
 
 """
@@ -140,11 +140,16 @@ type User {
 }
 
 type Query {
+  ticketStatuses: [TicketStatus!]!
+  ticketStatusHistory(id: String!): [StatusHistory!]!
   findAll: [User!]!
+  ticketAuthor(id: String!): UserResult!
   user(id: String!): UserResult!
+  findOneByToken: UserResult!
   findTickets(filter: TicketFilterInput): [Ticket!]!
   tickets: [Ticket!]!
   ticket(id: String!): Ticket!
+  findAllIssues: [Issue!]!
 }
 
 union UserResult = User | ErrorResponse

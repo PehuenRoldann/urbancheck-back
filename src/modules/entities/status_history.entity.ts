@@ -27,5 +27,5 @@ export class StatusHistory {
   ticket: Ticket;
 
   @Field(() => TicketStatus)
-  status: TicketStatus;
+  ticket_status: TicketStatus;
 }

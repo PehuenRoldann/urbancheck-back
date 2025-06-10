@@ -6,16 +6,42 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@modules/prisma/prisma.service';
 import { CreateUserInput } from '@modules/users/dto/user.input';
 import { EntityMapperService } from '@modules/utils/mapper/mapper.service';
+import { StatusHistory } from '@modules/entities/status_history.entity';
 
 
 @Injectable()
 export class UsersService {
+  
   constructor(
     private readonly logger: CustomLogger,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly entityMapper: EntityMapperService,
   ) {}
+
+
+  async findAuthor(pTicketId: string) {
+    
+    const statusHistory = await this.prisma.status_history.findMany({
+      where: {
+        ticket_id: pTicketId,
+      },
+      orderBy: {
+        its: 'asc', // o 'desc' si querés los más recientes primero
+      },
+    });
+
+    const firstStatus = statusHistory[0];
+
+    if (!firstStatus) throw new Error("No se encontró historial de estado para el ticket.");
+
+    const userDb = await this.prisma.user_account.findFirst({
+      where: {id: firstStatus.author_id}
+    });
+
+    return userDb as unknown as User;
+    
+  }
 
   async FindAll(): Promise<User[]> {
     this.logger.log('UsersService - FindAll');
@@ -24,9 +50,16 @@ export class UsersService {
   }
 
   async findOne(pId: string): Promise<User | undefined> {
-    this.logger.log(`UsersService - FindOne - id: ${pId}`);
-    await delay(2000);
-    return new User();
+    
+    const user_prisma = await this.prisma.user_account.findFirst({
+      where: {auth_provider_id: pId}
+    })
+
+    if (user_prisma){
+      return user_prisma as unknown as User;
+    }
+
+    throw new ForbiddenException (`UserService - findOne - user not found - id:${pId}`);
   }
 
   async findByAuthId (pAuthId: string): Promise<User> {

@@ -40,6 +40,25 @@ export class UsersResolver {
     return await this.usersService.FindAll();
   }
 
+  @Query(() => UserResult)
+  @UseGuards(KeycloakProfileGuard)
+  async ticketAuthor (
+    @Args('id', { type: () => String }) id: string,
+  ): Promise<User | ErrorResponse> {
+
+    try {
+      const userData = await this.usersService.findAuthor(id);
+
+      return userData;
+    }
+    catch(err) {
+      const stack  = (err as Error).stack;
+      const message = `UsersResolver - ticketAuthor - not found for ticket: ${id}`;
+      this.logger.error(message, stack);
+      return new ErrorResponse(message, '500', JSON.stringify(stack));
+    }
+  }
+
   @Query(() => UserResult, { name: 'user' })
   async findOne(
     @Args('id', { type: () => String }) id: string,
@@ -52,6 +71,26 @@ export class UsersResolver {
 
     this.logger.warn(
       `UsersResolver - findOne - Usuario no encontrado con id: ${id}`,
+    );
+    return new ErrorResponse('Usuario no encontrado', '404', 'Users > FindOne');
+  }
+
+  @Query(() => UserResult)
+  @UseGuards(KeycloakProfileGuard)
+  async findOneByToken(
+    @Context('req') req: any,
+  ): Promise<User | ErrorResponse> {
+
+    const userProfile = req.keycloakProfile;
+
+    const userData = await this.usersService.findOne(userProfile.sub);
+
+    if (userData) {
+      return userData;
+    }
+
+    this.logger.warn(
+      `UsersResolver - findOne - Usuario no encontrado con auth_provider_id: ${userProfile.sub}`,
     );
     return new ErrorResponse('Usuario no encontrado', '404', 'Users > FindOne');
   }

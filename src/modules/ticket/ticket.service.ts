@@ -89,8 +89,18 @@ export class TicketService {
     return `This action returns all ticket`;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} ticket`;
+  async findOne(id: string) {
+    const ticket_db = await this.prisma.ticket.findFirst({
+      where: {id: id},
+      include: {
+        status_history: true,
+        priority_history: true,
+        subscription: true,
+      }
+    });
+
+    return ticket_db as unknown as Ticket;
+
   }
 
   update(id: string, updateTicketInput: UpdateTicketInput) {
