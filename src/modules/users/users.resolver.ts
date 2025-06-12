@@ -48,7 +48,7 @@ export class UsersResolver {
 
     try {
       const userData = await this.usersService.findAuthor(id);
-
+      this.logger.log(`UsersResolver - return author with id: ${id}`);
       return userData;
     }
     catch(err) {
@@ -66,6 +66,7 @@ export class UsersResolver {
     const userData = await this.usersService.findOne(id);
 
     if (userData) {
+      this.logger.log(`UsersResolver - return user data for id: ${id}`);
       return userData;
     }
 
@@ -86,6 +87,7 @@ export class UsersResolver {
     const userData = await this.usersService.findOne(userProfile.sub);
 
     if (userData) {
+      this.logger.log(`UsersResolver - return user data for authentication id: ${userProfile.sub}`);
       return userData;
     }
 
@@ -117,6 +119,7 @@ export class UsersResolver {
 
       const userCreateInput = await this.keycloakService.mapKeycloakProfileToUser(userProfile);
       const resposne = await this.usersService.lazySync(userCreateInput);
+      this.logger.log(`UsersResolver - usuario sincronizado correctamente - auth_id: ${userProfile.sub}; id: ${resposne.id}`);
       return resposne;
     } catch (err) {
       this.logger.error(`UsersResolver - create - ${err}`);

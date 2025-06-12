@@ -127,7 +127,6 @@ export class UsersService {
       ]);
 
       const userToReturn: User = newUser as User;
-      // return this.entityMapper.mapUserEntity(newUser);
       return userToReturn;
     } catch (err) {
       const error = err as Error;
