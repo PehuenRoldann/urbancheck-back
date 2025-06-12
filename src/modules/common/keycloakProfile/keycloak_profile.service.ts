@@ -6,6 +6,7 @@ import { PrismaService } from '@modules/prisma/prisma.service';
 import { Role } from '@modules/entities/role.entity';
 import { CustomLogger } from '../logger/logger.service';
 import { CreateUserInput } from '@modules/users/dto/user.input';
+import { role_enum } from '@prisma/client';
 
 @Injectable()
 export class KeycloakService {
@@ -27,6 +28,7 @@ export class KeycloakService {
       throw new ForbiddenException(`KeycloakService - El usuario no tiene un rol asignado - keycloakId: ${profile.sub}`);
     }
 
+
     const rolesFromDb = (await this.prisma.role.findMany()).map((r) => new Role(r.id, r.description));
     const roleData = rolesFromDb.find(x => x.description === profile_role_name);
 
@@ -42,7 +44,7 @@ export class KeycloakService {
       dni: profile.dni,
       firstName: profile.firstName,
       lastName: profile.lastName,
-      birthDate: new Date(profile.birthDate),
+      birthDate: profile.birthDate ? new Date(profile.birthDate) : new Date(),
       postalCode: profile.postalCode
         ? parseInt(profile.postalCode)
         : null,
