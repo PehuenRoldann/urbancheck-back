@@ -5,8 +5,9 @@ import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@modules/prisma/prisma.service';
 import { CreateUserInput } from '@modules/users/dto/user.input';
-import { EntityMapperService } from '@modules/utils/mapper/mapper.service';
 import { StatusHistory } from '@modules/entities/status_history.entity';
+import { RoleLabels } from '@modules/utils/mappers';
+import { role_enum } from '@prisma/client';
 
 
 @Injectable()
@@ -16,7 +17,6 @@ export class UsersService {
     private readonly logger: CustomLogger,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly entityMapper: EntityMapperService,
   ) {}
 
 
@@ -52,11 +52,17 @@ export class UsersService {
   async findOne(pId: string): Promise<User | undefined> {
     
     const user_prisma = await this.prisma.user_account.findFirst({
-      where: {auth_provider_id: pId}
+      where: {auth_provider_id: pId},
+      include: {
+        role: true,
+      }
     })
 
     if (user_prisma){
-      return user_prisma as unknown as User;
+      const userToReturn =  user_prisma as unknown as User;
+
+      userToReturn.role.description = RoleLabels[userToReturn.role.description as unknown as role_enum];
+      return userToReturn;
     }
 
     throw new ForbiddenException (`UserService - findOne - user not found - id:${pId}`);
@@ -72,7 +78,10 @@ export class UsersService {
     );
 
     if (user) {
-      return user as unknown as User;
+      const userToReturn =  user as unknown as User;
+
+      userToReturn.role.description = RoleLabels[userToReturn.role.description as unknown as role_enum];
+      return userToReturn;
     }
 
     throw new ForbiddenException(`UserService - findByAuthId - No se encuentra un usuario con authId: ${pAuthId}`);

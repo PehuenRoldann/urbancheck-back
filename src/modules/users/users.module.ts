@@ -4,7 +4,6 @@ import { UsersResolver } from './users.resolver';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@modules/prisma/prisma.service';
-import { EntityMapperService } from '@modules/utils/mapper/mapper.service';
 import { KeycloakProfileGuard } from '@modules/common/keycloakProfile/keycloak_profile.guard';
 import { KeycloakService } from '@modules/common/keycloakProfile/keycloak_profile.service';
 
@@ -15,7 +14,6 @@ import { KeycloakService } from '@modules/common/keycloakProfile/keycloak_profil
     CustomLogger,
     ConfigService,
     PrismaService,
-    EntityMapperService,
     KeycloakProfileGuard,
     KeycloakService,
   ],
