@@ -5,7 +5,12 @@ import { PrismaService } from '@modules/prisma/prisma.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 
 @Module({
-  providers: [TicketStatusService, TicketStatusResolver, PrismaService, CustomLogger],
+  providers: [
+    TicketStatusService,
+    TicketStatusResolver,
+    PrismaService,
+    CustomLogger
+  ],
   exports: [TicketStatusService]
 })
 export class TicketStatusModule {}

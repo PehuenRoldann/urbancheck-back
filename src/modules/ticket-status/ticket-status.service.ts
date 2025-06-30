@@ -3,11 +3,15 @@ import { PrismaService } from '@modules/prisma/prisma.service';
 import { TicketStatus } from '@modules/entities/ticket_status.entity';
 import { StatusHistory } from '@modules/entities/status_history.entity';
 import { TicketStatusLabels } from '@modules/utils/mappers';
+import { CustomLogger } from '@modules/common/logger/logger.service';
 
 
 @Injectable()
 export class TicketStatusService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: CustomLogger
+  ) {}
 
   async findAll(): Promise<TicketStatus[]> {
     const ticket_status_arr =  await this.prisma.ticket_status.findMany();
@@ -37,5 +41,20 @@ export class TicketStatusService {
     });
 
     return status_history as unknown as StatusHistory[];
+  }
+
+
+  async findTicketStatusById(id: number):Promise<TicketStatus> {
+
+
+    const ticket_status_db = await this.prisma.ticket_status.findFirst({
+      where: {id: id}
+    });
+
+    const statusToReturn = ticket_status_db as unknown as TicketStatus;
+
+    statusToReturn.description = TicketStatusLabels[statusToReturn.description];
+
+    return statusToReturn;
   }
 }

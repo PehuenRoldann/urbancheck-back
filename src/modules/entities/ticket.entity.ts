@@ -3,6 +3,9 @@ import { PriorityHistory } from '@modules/entities/priority_history.entity';
 import { StatusHistory } from '@modules/entities/status_history.entity';
 import { Subscription } from '@modules/entities/subscription.entity';
 import { Issue } from '@modules/entities/issue.entity';
+import { User } from '@modules/entities/user.entity';
+import { TicketStatus } from './ticket_status.entity';
+import { Dependency } from './dependency.entity';
 
 @ObjectType()
 export class Ticket {
@@ -44,4 +47,14 @@ export class Ticket {
 
   @Field(() => [Subscription])
   subscription: Subscription[];
+
+  // FIELDS FOR SIMPLICITY, THESE ARE OBTAINED BY OPERATIONS
+  @Field(() => User, { nullable: true })
+  author?: User;
+
+  @Field(() => TicketStatus, { nullable: true })
+  current_status?: TicketStatus;
+
+  @Field(() => Dependency, { nullable: true })
+  dependency?: Dependency;
 }

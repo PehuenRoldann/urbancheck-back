@@ -7,13 +7,20 @@ import { priority_level_enum, role_enum, ticket_status_enum } from '@prisma/clie
 import { ForbiddenError } from 'apollo-server-express';
 import { Ticket } from '@modules/entities/ticket.entity';
 import { TicketFilterInput } from './dto/filter-ticket.input';
+import { UsersService } from '@modules/users/users.service';
+import { TicketStatusService } from '@modules/ticket-status/ticket-status.service';
+import { DependencyService } from '@modules/dependency/dependency.service';
 
 
 @Injectable()
 export class TicketService {
+  
 
   constructor (
     private readonly prisma: PrismaService,
+    private readonly usersService: UsersService,
+    private readonly ticketStatusService: TicketStatusService,
+    private readonly dependencyService: DependencyService,
   ) {}
 
   async create(input: CreateTicketInput, user: User): Promise<Ticket> {
@@ -121,7 +128,12 @@ export class TicketService {
   }
 
 
-  async findFiltered(filter?: TicketFilterInput): Promise<Ticket[]> {
+  async findFiltered(
+    filter: TicketFilterInput | undefined = undefined,
+    include_author: boolean = false,
+    include_current_status: boolean = false,
+    include_dependency: boolean = false,
+  ): Promise<Ticket[]> {
 
     const where: any = {};
   
@@ -149,6 +161,7 @@ export class TicketService {
       };
     }
 
+    let dataToReturn: Ticket[] = [];
     
     if (filter?.page === undefined) {
       const prismaTicket = await this.prisma.ticket.findMany({
@@ -165,7 +178,7 @@ export class TicketService {
         },
       });
 
-      return prismaTicket as unknown as Ticket[];
+      dataToReturn = prismaTicket as unknown as Ticket[];
     }
     else if (filter?.limit === undefined) {
       throw Error('TicketService - findFiltered - There is no given limit for pagination!');
@@ -189,9 +202,74 @@ export class TicketService {
         orderBy: { its: 'desc' }
       });
 
-      return data as unknown as Ticket[];
+      dataToReturn = data as unknown as Ticket[];
     }
+
+    if (include_author) {
+      dataToReturn = await Promise.all(
+        dataToReturn.map(async (ticket) => {
+          const author = await this.usersService.findAuthor(ticket.id);
+          return { ...ticket, author: author ?? undefined };
+        })
+      );
+    }
+
+    if (include_current_status) {
+      dataToReturn = await Promise.all(
+        dataToReturn.map(async (ticket) => {
+          const lastIndex = ticket.status_history.length - 1;
+          const last_history = ticket.status_history[lastIndex];
+          const current_status = await this.ticketStatusService.findTicketStatusById(last_history.status_id);
+          return { ...ticket, current_status: current_status ?? undefined };
+        })
+      )
+    }
+
+    if (include_dependency) {
+      dataToReturn = await Promise.all(
+        dataToReturn.map(async (ticket) => {
+          const dependency = await this.dependencyService.findOneById(ticket.issue!.id);
+          return { ...ticket, dependency: dependency ?? undefined};
+        })
+      )
+    }
+
+
+    return dataToReturn;
 
   }
   
+  async countFiltered(filter?: TicketFilterInput): Promise<number> {
+    
+    const where: any = {};
+
+    if (filter?.user_id) {
+      where.subscription = {
+        some: { user_id: filter.user_id }
+      };
+    }
+  
+    if (filter?.status_id) {
+      where.status_history = {
+        some: { status_id: filter.status_id }
+      };
+    }
+  
+    if (filter?.priority_id) {
+      where.priority_history = {
+        some: { priority_id: filter.priority_id }
+      };
+    }
+  
+    if (filter?.dependency_id) {
+      where.issue = {
+        dependency_id: filter.dependency_id
+      };
+    }
+
+    return this.prisma.ticket.count({
+      where,
+    });
+
+  }
 }

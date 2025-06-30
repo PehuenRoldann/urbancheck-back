@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, Context, createUnionType } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, createUnionType, Info } from '@nestjs/graphql';
 import { TicketService } from '@modules/ticket/ticket.service';
 import { Ticket } from '@modules/entities/ticket.entity';
 import { CreateTicketInput } from '@modules/ticket/dto/create-ticket.input';
@@ -9,6 +9,8 @@ import { UsersService } from '@modules/users/users.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ErrorResponse } from '@modules/common/graphql/error.model';
 import { TicketFilterInput } from './dto/filter-ticket.input';
+import { GraphQLResolveInfo } from 'graphql';
+import * as graphqlFields from 'graphql-fields';
 
 export const TicketResult = createUnionType({
   name: 'TicketResult',
@@ -55,11 +57,25 @@ export class TicketResolver {
   @Query(() => [Ticket])
   @UseGuards(KeycloakProfileGuard)
   async findTickets(
-    @Args('filter', { nullable: true }) filter?: TicketFilterInput
+    @Info() info: GraphQLResolveInfo,
+    @Args('filter', { nullable: true }) filter?: TicketFilterInput,
   ): Promise<Ticket[]> {
-    this.logger.log(`TicketResolver - findTicktes - parameters: ${JSON.stringify(filter)}`);
+
+    const requestedFields = graphqlFields(info);
+    this.logger.log(`TicketResolver - findTicktes - requested fields: ${JSON.stringify(requestedFields)}`);
+    this.logger.log(`TicketResolver - findTicktes - filter: ${JSON.stringify(filter)}`);
     try {
-      return this.ticketService.findFiltered(filter);
+
+      const hasAuthor = 'author' in requestedFields;
+      const hasCurrentStatus = 'current_status' in requestedFields;
+      const hasDependency = 'dependency' in requestedFields;
+
+      return this.ticketService.findFiltered(
+        filter,
+        hasAuthor,
+        hasCurrentStatus,
+        hasDependency
+      );
     }
     catch (error) {
       this.logger.error(`TicketResolver - findTickets - error: ${error.message}`, error);
@@ -96,5 +112,21 @@ export class TicketResolver {
   @Mutation(() => Ticket)
   removeTicket(@Args('id', { type: () => String }) id: string) {
     return this.ticketService.remove(id);
+  }
+
+  @Query(() => Number)
+  @UseGuards(KeycloakProfileGuard)
+  async countTickets(
+    @Args('filter', { nullable: true }) filter?: TicketFilterInput,
+  ) {
+
+    this.logger.log(`TicketResolver - countTickets - filter: ${JSON.stringify(filter)}`);
+
+    try {
+        return this.ticketService.countFiltered(filter);
+    } catch (error) {
+      this.logger.error(error.message, error);
+      throw error;
+    }
   }
 }

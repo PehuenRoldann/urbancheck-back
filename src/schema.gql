@@ -70,6 +70,9 @@ type Ticket {
   priority_history: [PriorityHistory!]!
   status_history: [StatusHistory!]!
   subscription: [Subscription!]!
+  author: User
+  current_status: TicketStatus
+  dependency: Dependency
 }
 
 type PriorityHistory {
@@ -147,6 +150,7 @@ type Query {
   findTickets(filter: TicketFilterInput): [Ticket!]!
   tickets: [Ticket!]!
   ticket(id: String!): Ticket!
+  countTickets(filter: TicketFilterInput): Float!
   ticketStatus: [TicketStatusResult!]!
   ticketStatusHistory(id: String!): [StatusHistory!]!
   findAllIssues: [Issue!]!

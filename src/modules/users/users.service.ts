@@ -22,6 +22,8 @@ export class UsersService {
 
   async findAuthor(pTicketId: string) {
     
+    /* this.logger.log('UsersService - findAuthor - id: ' + pTicketId); */
+
     const statusHistory = await this.prisma.status_history.findMany({
       where: {
         ticket_id: pTicketId,
@@ -33,13 +35,20 @@ export class UsersService {
 
     const firstStatus = statusHistory[0];
 
-    if (!firstStatus) throw new Error("No se encontró historial de estado para el ticket.");
+    if (!firstStatus) {
+      this.logger.error(`UsersService - findAuthor - usuario no encontrado - id: ${pTicketId}`);
+      throw new Error(`UsersService - findAuthor - usuario no encontrado - id: ${pTicketId}`);
+    };
 
     const userDb = await this.prisma.user_account.findFirst({
       where: {id: firstStatus.author_id}
     });
 
-    return userDb as unknown as User;
+    
+
+    const userToReturn =  userDb as unknown as User;
+    /* this.logger.log(`UsersService - findAuthor - found user: ${JSON.stringify(userToReturn)}`); */
+    return userToReturn;
     
   }
 
