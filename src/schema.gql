@@ -140,8 +140,6 @@ type User {
 }
 
 type Query {
-  ticketStatuses: [TicketStatus!]!
-  ticketStatusHistory(id: String!): [StatusHistory!]!
   findAll: [User!]!
   ticketAuthor(id: String!): UserResult!
   user(id: String!): UserResult!
@@ -149,6 +147,8 @@ type Query {
   findTickets(filter: TicketFilterInput): [Ticket!]!
   tickets: [Ticket!]!
   ticket(id: String!): Ticket!
+  ticketStatus: [TicketStatusResult!]!
+  ticketStatusHistory(id: String!): [StatusHistory!]!
   findAllIssues: [Issue!]!
 }
 
@@ -165,7 +165,11 @@ input TicketFilterInput {
   status_id: Int
   priority_id: Int
   dependency_id: Int
+  page: Int
+  limit: Int
 }
+
+union TicketStatusResult = TicketStatus | ErrorResponse
 
 type Mutation {
   lazySyncUser(input: LazySyncUserInput!): UserResult!

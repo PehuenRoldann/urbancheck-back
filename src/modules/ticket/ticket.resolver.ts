@@ -9,7 +9,6 @@ import { UsersService } from '@modules/users/users.service';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { ErrorResponse } from '@modules/common/graphql/error.model';
 import { TicketFilterInput } from './dto/filter-ticket.input';
-import { User } from '@modules/entities/user.entity';
 
 export const TicketResult = createUnionType({
   name: 'TicketResult',
@@ -58,7 +57,15 @@ export class TicketResolver {
   async findTickets(
     @Args('filter', { nullable: true }) filter?: TicketFilterInput
   ): Promise<Ticket[]> {
-    return this.ticketService.findFiltered(filter);
+    this.logger.log(`TicketResolver - findTicktes - parameters: ${JSON.stringify(filter)}`);
+    try {
+      return this.ticketService.findFiltered(filter);
+    }
+    catch (error) {
+      this.logger.error(`TicketResolver - findTickets - error: ${error.message}`, error);
+      return [];
+    }
+    
   }
 
   @Query(() => [Ticket], { name: 'tickets' })
@@ -69,7 +76,15 @@ export class TicketResolver {
   @Query(() => Ticket, { name: 'ticket' })
   @UseGuards(KeycloakProfileGuard)
   async findOne(@Args('id', { type: () => String }) id: string) {
-    return await this.ticketService.findOne(id);
+
+    try {
+      return await this.ticketService.findOne(id);
+    }
+    catch (error) {
+
+      this.logger.error(`TicketResolver - findOne - ${error.message}`, error);
+      return new ErrorResponse (error.message, String(500), 'TicketResolver - findOne');
+    }
   }
 
 

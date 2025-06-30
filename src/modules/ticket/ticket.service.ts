@@ -8,6 +8,7 @@ import { ForbiddenError } from 'apollo-server-express';
 import { Ticket } from '@modules/entities/ticket.entity';
 import { TicketFilterInput } from './dto/filter-ticket.input';
 
+
 @Injectable()
 export class TicketService {
 
@@ -90,16 +91,24 @@ export class TicketService {
   }
 
   async findOne(id: string) {
-    const ticket_db = await this.prisma.ticket.findFirst({
-      where: {id: id},
-      include: {
-        status_history: true,
-        priority_history: true,
-        subscription: true,
-      }
-    });
 
-    return ticket_db as unknown as Ticket;
+    try {
+
+      const ticket_db = await this.prisma.ticket.findFirst({
+        where: {id: id},
+        include: {
+          status_history: true,
+          priority_history: true,
+          subscription: true,
+        }
+      });
+
+      return ticket_db as unknown as Ticket;
+
+    } catch (error) {
+      throw error;
+    }
+    
 
   }
 
@@ -113,6 +122,7 @@ export class TicketService {
 
 
   async findFiltered(filter?: TicketFilterInput): Promise<Ticket[]> {
+
     const where: any = {};
   
     if (filter?.user_id) {
@@ -138,18 +148,50 @@ export class TicketService {
         dependency_id: filter.dependency_id
       };
     }
-  
-    const prismaTicket = await this.prisma.ticket.findMany({
-      where,
-      include: {
-        issue: true,
-        subscription: true,
-        status_history: true,
-        priority_history: true,
-      },
-    });
 
-    return prismaTicket as unknown as Ticket[];
+    
+    if (filter?.page === undefined) {
+      const prismaTicket = await this.prisma.ticket.findMany({
+        where,
+        include: {
+          issue: true,
+          subscription: true,
+          status_history: {
+            include: {
+              ticket_status: true
+            }
+          },
+          priority_history: true,
+        },
+      });
+
+      return prismaTicket as unknown as Ticket[];
+    }
+    else if (filter?.limit === undefined) {
+      throw Error('TicketService - findFiltered - There is no given limit for pagination!');
+    }
+    else {
+      const page = filter!.page!;
+      const limit = filter!.limit!;
+
+      const skip = (page - 1) * limit;
+
+      const data = await this.prisma.ticket.findMany({
+        where,
+        include: {
+          issue: true,
+          subscription: true,
+          status_history: true,
+          priority_history: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { its: 'desc' }
+      });
+
+      return data as unknown as Ticket[];
+    }
+
   }
   
 }

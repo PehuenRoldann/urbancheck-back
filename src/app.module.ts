@@ -7,7 +7,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { TicketModule } from './modules/ticket/ticket.module';
-import { TicketStatusResolver } from './modules/ticket-status/ticket-status.resolver';
 import { TicketStatusModule } from './modules/ticket-status/ticket-status.module';
 import { DependencyModule } from './modules/dependency/dependency.module';
 
@@ -26,6 +25,6 @@ import { DependencyModule } from './modules/dependency/dependency.module';
     DependencyModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TicketStatusResolver],
+  providers: [AppService],
 })
 export class AppModule {}

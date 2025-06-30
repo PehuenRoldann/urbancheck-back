@@ -44,7 +44,6 @@ export class KeycloakProfileGuard implements CanActivate {
     const profile = await response.json();
     (req as any).keycloakProfile = profile;
 
-    this.logger.log(`KeycloakProfileGuard - Token Válido - ${req.body}`);
     return true;
   }
 }

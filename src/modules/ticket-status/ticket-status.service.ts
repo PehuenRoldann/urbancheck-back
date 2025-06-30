@@ -1,7 +1,8 @@
-import { Injectable, Query, UseGuards } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@modules/prisma/prisma.service';
 import { TicketStatus } from '@modules/entities/ticket_status.entity';
 import { StatusHistory } from '@modules/entities/status_history.entity';
+import { TicketStatusLabels } from '@modules/utils/mappers';
 
 
 @Injectable()
@@ -10,7 +11,16 @@ export class TicketStatusService {
 
   async findAll(): Promise<TicketStatus[]> {
     const ticket_status_arr =  await this.prisma.ticket_status.findMany();
-    return ticket_status_arr as unknown as TicketStatus[];
+
+    
+
+    const ticketStatus =  ticket_status_arr as unknown as TicketStatus[];
+
+    ticketStatus.forEach(elem => {
+      elem.description = TicketStatusLabels[elem.description]
+    });
+
+    return ticketStatus;
   }
 
   async findTicketStatusHistory(pTicketId: string): Promise<StatusHistory[]> {

@@ -13,4 +13,10 @@ export class TicketFilterInput {
 
   @Field(() => Int, { nullable: true })
   dependency_id?: number;
+
+  @Field(() => Int, { nullable: true })
+  page?: number;
+
+  @Field(() => Int, { nullable: true })
+  limit?: number;
 }
