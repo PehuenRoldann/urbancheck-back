@@ -105,18 +105,6 @@ export class UsersResolver {
   ): Promise<typeof UserResult> {
     try {
       const userProfile = req.keycloakProfile;
-
-      if (userProfile.sub !== input.auth_provider_id) {
-        this.logger.warn(
-          `Intento de registrar usuario con ID que no coincide con token: ${input.auth_provider_id} !== ${userProfile.sub}`,
-        );
-        return new ErrorResponse(
-          'El ID del proveedor de autenticación no coincide con el token',
-          '401',
-          'Users > create',
-        );
-      }
-
       const userCreateInput = await this.keycloakService.mapKeycloakProfileToUser(userProfile);
       const resposne = await this.usersService.lazySync(userCreateInput);
       this.logger.log(`UsersResolver - usuario sincronizado correctamente - auth_id: ${userProfile.sub}; id: ${resposne.id}`);

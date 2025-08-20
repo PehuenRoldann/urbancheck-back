@@ -165,10 +165,10 @@ enum priority_level_enum {
 }
 
 enum role_enum {
-  Operador_de_Atenci_n_al_vecino @map("Operador de Atención al vecino")
-  Ciudadano
-  Responsable_de_dependencia     @map("Responsable de dependencia")
-  Miembro_de_cuadrilla           @map("Miembro de cuadrilla")
+  operador_atencion_vecino @map("operador-atencion-vecino")
+  ciudadano
+  responsable_dependencia  @map("responsable-dependencia")
+  miembro_cuadrilla        @map("miembro-cuadrilla")
 }
 
 enum ticket_status_enum {

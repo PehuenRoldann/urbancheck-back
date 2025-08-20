@@ -3,10 +3,10 @@ SET search_path TO urbancheck_back;
 
 -- ENUMS
 CREATE TYPE role_enum AS ENUM (
-  'Operador de Atención al vecino',
-  'Ciudadano',
-  'Responsable de dependencia',
-  'Miembro de cuadrilla'
+  'operador-atencion-vecino',
+  'ciudadano',
+  'responsable-dependencia',
+  'miembro-cuadrilla'
 );
 
 CREATE TYPE municipal_dependency_enum AS ENUM (
@@ -178,10 +178,10 @@ INSERT INTO dependency (name) VALUES
 
 -- Roles
 INSERT INTO role (description) VALUES
-  ('Operador de Atención al vecino'),
-  ('Ciudadano'),
-  ('Responsable de dependencia'),
-  ('Miembro de cuadrilla');
+  ('operador-atencion-vecino'),
+  ('ciudadano'),
+  ('responsable-dependencia'),
+  ('miembro-cuadrilla');
 
 -- Ticket statuses
 INSERT INTO ticket_status (description) VALUES

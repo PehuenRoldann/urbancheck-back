@@ -24,7 +24,7 @@ export class TicketService {
   ) {}
 
   async create(input: CreateTicketInput, user: User): Promise<Ticket> {
-    const status = user.role.description === role_enum.Ciudadano
+    const status = user.role.description === role_enum.ciudadano
       ? ticket_status_enum.Pendiente
       : ticket_status_enum.V_lido;
   

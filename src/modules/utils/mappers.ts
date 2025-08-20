@@ -27,10 +27,10 @@ export const PriorityLevelLabels: Record<priority_level_enum, string> = {
 
 
 export const RoleLabels: Record<role_enum, string> = {
-  [role_enum.Operador_de_Atenci_n_al_vecino]: 'Operador de Atención al vecino',
-  [role_enum.Ciudadano]: 'Ciudadano',
-  [role_enum.Responsable_de_dependencia]: 'Responsable de dependencia',
-  [role_enum.Miembro_de_cuadrilla]: 'Miembro de cuadrilla',
+  [role_enum.operador_atencion_vecino]: 'Operador de Atención al vecino',
+  [role_enum.ciudadano]: 'Ciudadano',
+  [role_enum.responsable_dependencia]: 'Responsable de dependencia',
+  [role_enum.miembro_cuadrilla]: 'Miembro de cuadrilla',
 };
 
 export const DependencyLabels: Record<municipal_dependency_enum, string> = {

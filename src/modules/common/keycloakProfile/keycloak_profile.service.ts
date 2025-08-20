@@ -18,7 +18,7 @@ export class KeycloakService {
 
   async mapKeycloakProfileToUser(profile: any): Promise<any> {
 
-    const realm_profile_roles = profile.realm_access.roles as Array<string>;
+    const realm_profile_roles = profile.roles as Array<string>;
     const urbancheck_roles = Object.values(UserRoles);
 
     const profile_role_name = urbancheck_roles.find((role) => realm_profile_roles.includes(role));
@@ -29,7 +29,7 @@ export class KeycloakService {
     }
 
 
-    const rolesFromDb = (await this.prisma.role.findMany()).map((r) => new Role(r.id, r.description));
+    const rolesFromDb = (await this.prisma.role.findMany()).map((r) => new Role(r.id, r.description.replaceAll('_', '-')));
     const roleData = rolesFromDb.find(x => x.description === profile_role_name);
 
     if (roleData === undefined) {
@@ -41,9 +41,9 @@ export class KeycloakService {
     const userData: CreateUserInput = {
       authProviderId: profile.sub,
       email: profile.email,
-      dni: profile.dni,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
+      dni: profile.dni ?? '',
+      firstName: profile.given_name,
+      lastName: profile.family_name,
       birthDate: profile.birthDate ? new Date(profile.birthDate) : new Date(),
       postalCode: profile.postalCode
         ? parseInt(profile.postalCode)
