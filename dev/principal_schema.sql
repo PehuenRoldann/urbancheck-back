@@ -239,5 +239,6 @@ ALTER TABLE status_history
 -- cambio dni de bigint a string
 ALTER TABLE user_account
 ALTER COLUMN dni TYPE TEXT USING dni::TEXT;
-
-
+-- Agregar columna scheduled_resolution_at a la tabla ticket
+ALTER TABLE ticket
+ADD COLUMN scheduled_resolution_at TIMESTAMP WITH TIME ZONE;

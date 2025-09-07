@@ -10,6 +10,8 @@ import { TicketFilterInput } from './dto/filter-ticket.input';
 import { UsersService } from '@modules/users/users.service';
 import { TicketStatusService } from '@modules/ticket-status/ticket-status.service';
 import { DependencyService } from '@modules/dependency/dependency.service';
+import { RoleLabels } from '@modules/utils/mappers';
+import { CustomLogger } from '@modules/common/logger/logger.service';
 
 
 @Injectable()
@@ -21,10 +23,18 @@ export class TicketService {
     private readonly usersService: UsersService,
     private readonly ticketStatusService: TicketStatusService,
     private readonly dependencyService: DependencyService,
+    private readonly logger: CustomLogger,
   ) {}
 
   async create(input: CreateTicketInput, user: User): Promise<Ticket> {
-    const status = user.role.description === role_enum.ciudadano
+
+    this.logger.log(`TicketService - create - parameteres: ${JSON.stringify(input)} user: ${JSON.stringify(user)}`);
+
+  
+    if (!user || !user.id) {
+      throw new ForbiddenError('TicketService - create - invalid user');
+    }
+    const status = user.role.description === RoleLabels[role_enum.ciudadano]
       ? ticket_status_enum.Pendiente
       : ticket_status_enum.V_lido;
   

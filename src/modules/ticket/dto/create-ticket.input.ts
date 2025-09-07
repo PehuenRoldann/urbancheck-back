@@ -20,6 +20,6 @@ export class CreateTicketInput {
   @Field(() => Int, {nullable: true})
   priorityId?: number;
 
-  @Field(() => Int, {nullable: true})
-  issueId?: number;
+  @Field(() => Int)
+  issueId: number;
 }

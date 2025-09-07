@@ -195,7 +195,7 @@ input CreateTicketInput {
   imageUrl: String
   statusId: Int
   priorityId: Int
-  issueId: Int
+  issueId: Int!
 }
 
 input UpdateTicketInput {
