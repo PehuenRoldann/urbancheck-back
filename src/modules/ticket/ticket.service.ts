@@ -10,8 +10,10 @@ import { TicketFilterInput } from './dto/filter-ticket.input';
 import { UsersService } from '@modules/users/users.service';
 import { TicketStatusService } from '@modules/ticket-status/ticket-status.service';
 import { DependencyService } from '@modules/dependency/dependency.service';
-import { RoleLabels } from '@modules/utils/mappers';
+import { RoleLabels, TicketStatusLabels } from '@modules/utils/mappers';
 import { CustomLogger } from '@modules/common/logger/logger.service';
+import { StatusHistory } from '@modules/entities/status_history.entity';
+import { TicketStatus } from '@modules/entities/ticket_status.entity';
 
 
 @Injectable()
@@ -120,7 +122,28 @@ export class TicketService {
         }
       });
 
-      return ticket_db as unknown as Ticket;
+      const ticket_data =  ticket_db as unknown as Ticket;
+
+      let last_status_history: StatusHistory;
+
+      await this.prisma.status_history.findFirst({
+        where: {ticket_id: id},
+        orderBy: {its: 'desc'},
+      }).then((status_history) => {
+         last_status_history = status_history as StatusHistory;
+      });
+
+      await this.prisma.ticket_status.findFirst({
+        where: {id: last_status_history!.status_id ?? -1}
+      }).then((status) => {
+        ticket_data.current_status = status as TicketStatus as any;
+        if (ticket_data.current_status?.description === ticket_status_enum.V_lido) {
+          ticket_data.current_status.description = TicketStatusLabels[ticket_status_enum.V_lido];
+        }
+      });
+
+      return ticket_data;
+      
 
     } catch (error) {
       throw error;
