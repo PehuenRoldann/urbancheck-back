@@ -6,8 +6,10 @@ import { CustomLogger } from '@modules/common/logger/logger.service';
 import { UsersService } from '@modules/users/users.service';
 import { TicketStatusService } from '@modules/ticket-status/ticket-status.service';
 import { DependencyService } from '@modules/dependency/dependency.service';
+import { SubscriptionsModule } from '@modules/subscriptions/subscriptions.module';
 
 @Module({
+  imports: [SubscriptionsModule],
   providers: [
     TicketResolver,
     TicketService,
@@ -15,7 +17,7 @@ import { DependencyService } from '@modules/dependency/dependency.service';
     CustomLogger,
     UsersService,
     TicketStatusService,
-    DependencyService
+    DependencyService,
   ],
   exports: [TicketService]
 })

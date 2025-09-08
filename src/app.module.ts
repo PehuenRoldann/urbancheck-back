@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TicketModule } from './modules/ticket/ticket.module';
 import { TicketStatusModule } from './modules/ticket-status/ticket-status.module';
 import { DependencyModule } from './modules/dependency/dependency.module';
+import { EmailModule } from './modules/email/email.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { DependencyModule } from './modules/dependency/dependency.module';
     TicketModule,
     TicketStatusModule,
     DependencyModule,
+    EmailModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

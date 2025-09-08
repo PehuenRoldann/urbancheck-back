@@ -16,7 +16,7 @@ import { StatusHistory } from '@modules/entities/status_history.entity';
 import { TicketStatus } from '@modules/entities/ticket_status.entity';
 import { PriorityHistory } from '@modules/entities/priority_history.entity';
 import { Priority } from '@modules/entities/priority.entity';
-
+import { SubscriptionsService } from '@modules/subscriptions/subscriptions.service';
 
 @Injectable()
 export class TicketService {
@@ -28,6 +28,7 @@ export class TicketService {
     private readonly ticketStatusService: TicketStatusService,
     private readonly dependencyService: DependencyService,
     private readonly logger: CustomLogger,
+    private readonly subscriptionService: SubscriptionsService,
   ) {}
 
   async create(input: CreateTicketInput, user: User): Promise<Ticket> {
@@ -89,6 +90,13 @@ export class TicketService {
         }
       })
     ]);
+
+    const subscription = await this.prisma.subscription.create({
+      data: {
+        user_id: user.id,
+        ticket_id: createdTicket.id
+      }
+    })
   
     const fullTicket = await this.prisma.ticket.findFirst({
       where: { id: createdTicket.id },
@@ -178,6 +186,7 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
     `TicketService - update - id: ${input.id} input: ${JSON.stringify(input)} fields: ${JSON.stringify(fields)}`
   );
 
+
   try {
     await this.prisma.$transaction(
       async (tx) => {
@@ -223,6 +232,17 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
     this.logger.error(`TicketService - update - error: ${error.message}`, error.stack);
     throw error;
   }
+
+
+  if (input.statusId != null) {
+    const status = await this.ticketStatusService.findTicketStatusById(input.statusId);
+    this.subscriptionService.notifyStatusChange(
+      input.id,
+      status!.description
+    );
+  }
+
+
 
   // luego de commit, devolvés el ticket actualizado
   return this.findOne(input.id, fields);
