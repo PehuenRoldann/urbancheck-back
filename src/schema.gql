@@ -73,6 +73,8 @@ type Ticket {
   author: User
   current_status: TicketStatus
   dependency: Dependency
+  current_priority: Priority
+  scheduled_resolution_at: DateTime
 }
 
 type PriorityHistory {
@@ -207,4 +209,5 @@ input UpdateTicketInput {
   priorityId: Int
   issueId: Int
   id: ID!
+  scheduledResolutionAt: DateTime
 }

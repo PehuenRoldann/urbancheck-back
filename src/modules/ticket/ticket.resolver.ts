@@ -91,10 +91,15 @@ export class TicketResolver {
 
   @Query(() => Ticket, { name: 'ticket' })
   @UseGuards(KeycloakProfileGuard)
-  async findOne(@Args('id', { type: () => String }) id: string) {
+  async findOne(
+    @Args('id', { type: () => String }) id: string,
+    @Info() info: GraphQLResolveInfo
+  ) {
+
+    const fields = graphqlFields(info);
 
     try {
-      return await this.ticketService.findOne(id);
+      return await this.ticketService.findOne(id, fields);
     }
     catch (error) {
 
@@ -105,8 +110,27 @@ export class TicketResolver {
 
 
   @Mutation(() => Ticket)
-  updateTicket(@Args('updateTicketInput') updateTicketInput: UpdateTicketInput) {
-    return this.ticketService.update(updateTicketInput.id, updateTicketInput);
+  @UseGuards(KeycloakProfileGuard)
+  async updateTicket(
+    @Context('req') req: any,
+    @Args('updateTicketInput') updateTicketInput: UpdateTicketInput,
+    @Info() info: GraphQLResolveInfo
+  ) {
+    try {
+      const userProfile = req.keycloakProfile;
+      this.logger.log(`TicketResolver - updateTicket - user: ${userProfile.sub} - params: ${JSON.stringify(updateTicketInput)}`);
+      const user = await this.userService.findByAuthId(userProfile.sub); // Solo para verificar que el usuario exista
+      const fields = graphqlFields(info);
+      this.logger.log(`TicketResolver - updateTicket - fields: ${JSON.stringify(fields)}`);
+      return await this.ticketService.update(
+        updateTicketInput,
+        fields,
+        user
+      );
+    } catch (error) {
+      this.logger.error(`TicketResolver - updateTicket - ${error.message}`, error);
+      return new ErrorResponse (error.message, String(500), 'TicketResolver - updateTicket');
+    }
   }
 
   @Mutation(() => Ticket)

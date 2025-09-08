@@ -25,4 +25,5 @@ export class PriorityHistory {
 
   @Field(() => Date, { nullable: true })
   its?: Date;
+
 } 

@@ -5,4 +5,7 @@ import { InputType, Field, Int, PartialType, ID } from '@nestjs/graphql';
 export class UpdateTicketInput extends PartialType(CreateTicketInput) {
   @Field(() => ID)
   id: string;
+
+  @Field(() => Date, { nullable: true })
+  scheduledResolutionAt?: Date;
 }

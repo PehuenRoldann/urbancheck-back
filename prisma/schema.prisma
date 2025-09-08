@@ -77,20 +77,21 @@ model subscription {
 }
 
 model ticket {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description      String?            @db.VarChar(250)
-  latitude         Float?
-  longitude        Float?
-  timestamp        DateTime           @db.Timestamp(6)
-  image_url        String?
-  issue_id         Int?
-  its              DateTime?          @default(now()) @db.Timestamptz(6)
-  uts              DateTime?          @db.Timestamptz(6)
-  dts              DateTime?          @db.Timestamptz(6)
-  priority_history priority_history[]
-  status_history   status_history[]
-  subscription     subscription[]
-  issue            issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description             String?            @db.VarChar(250)
+  latitude                Float?
+  longitude               Float?
+  timestamp               DateTime           @db.Timestamp(6)
+  image_url               String?
+  issue_id                Int?
+  its                     DateTime?          @default(now()) @db.Timestamptz(6)
+  uts                     DateTime?          @db.Timestamptz(6)
+  dts                     DateTime?          @db.Timestamptz(6)
+  scheduled_resolution_at DateTime?          @db.Timestamptz(6)
+  priority_history        priority_history[]
+  status_history          status_history[]
+  subscription            subscription[]
+  issue                   issue?             @relation(fields: [issue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model ticket_status {

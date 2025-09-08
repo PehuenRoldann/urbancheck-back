@@ -14,6 +14,8 @@ import { RoleLabels, TicketStatusLabels } from '@modules/utils/mappers';
 import { CustomLogger } from '@modules/common/logger/logger.service';
 import { StatusHistory } from '@modules/entities/status_history.entity';
 import { TicketStatus } from '@modules/entities/ticket_status.entity';
+import { PriorityHistory } from '@modules/entities/priority_history.entity';
+import { Priority } from '@modules/entities/priority.entity';
 
 
 @Injectable()
@@ -109,7 +111,7 @@ export class TicketService {
     return `This action returns all ticket`;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, fields: any) {
 
     try {
 
@@ -124,23 +126,42 @@ export class TicketService {
 
       const ticket_data =  ticket_db as unknown as Ticket;
 
-      let last_status_history: StatusHistory;
+      if (fields.current_status) {
+        let last_status_history: StatusHistory;
 
-      await this.prisma.status_history.findFirst({
-        where: {ticket_id: id},
-        orderBy: {its: 'desc'},
-      }).then((status_history) => {
-         last_status_history = status_history as StatusHistory;
-      });
+        await this.prisma.status_history.findFirst({
+          where: {ticket_id: id},
+          orderBy: {its: 'desc'},
+        }).then((status_history) => {
+          last_status_history = status_history as StatusHistory;
+        });
 
-      await this.prisma.ticket_status.findFirst({
-        where: {id: last_status_history!.status_id ?? -1}
-      }).then((status) => {
-        ticket_data.current_status = status as TicketStatus as any;
-        if (ticket_data.current_status?.description === ticket_status_enum.V_lido) {
-          ticket_data.current_status.description = TicketStatusLabels[ticket_status_enum.V_lido];
-        }
-      });
+        await this.prisma.ticket_status.findFirst({
+          where: {id: last_status_history!.status_id ?? -1}
+        }).then((status) => {
+          ticket_data.current_status = status as TicketStatus as any;
+          if (ticket_data.current_status?.description === ticket_status_enum.V_lido) {
+            ticket_data.current_status.description = TicketStatusLabels[ticket_status_enum.V_lido];
+          }
+        });
+      }
+
+      if (fields.current_priority) {
+
+        let last_priority_history: PriorityHistory;
+
+        await this.prisma.priority_history.findFirst({
+          where: {ticket_id: id},
+          orderBy: {its: 'desc'},
+          include: {priority: true}
+        }).then((priority_history) => {
+          last_priority_history = priority_history as unknown as PriorityHistory;
+        });
+
+        ticket_data.current_priority = last_priority_history!.priority as unknown as Priority;
+
+        if (ticket_data.current_priority.description === priority_level_enum.Muy_Alta) ticket_data.current_priority.description = 'Muy Alta';
+      }
 
       return ticket_data;
       
@@ -152,9 +173,60 @@ export class TicketService {
 
   }
 
-  update(id: string, updateTicketInput: UpdateTicketInput) {
-    return `This action updates a #${id} ticket`;
+async update(input: UpdateTicketInput, fields: any, user: User) {
+  this.logger.log(
+    `TicketService - update - id: ${input.id} input: ${JSON.stringify(input)} fields: ${JSON.stringify(fields)}`
+  );
+
+  try {
+    await this.prisma.$transaction(
+      async (tx) => {
+        // 1) Actualizar ticket (usá el cliente tx, y await)
+        await tx.ticket.update({
+          where: { id: input.id },
+          data: {
+            ...(input.scheduledResolutionAt != null && {
+              scheduled_resolution_at: input.scheduledResolutionAt,
+            }),
+          },
+        });
+
+        // 2) Status history (condicional y con await)
+        if (input.statusId !== undefined && input.statusId !== null) {
+          await tx.status_history.create({
+            data: {
+              ticket_id: input.id,
+              status_id: input.statusId,
+              author_id: user?.id ?? null, // ojo con null/constraint
+            },
+          });
+        }
+
+        // 3) Priority history (condicional y con await)
+        if (input.priorityId !== undefined && input.priorityId !== null) {
+          await tx.priority_history.create({
+            data: {
+              ticket_id: input.id,
+              priority_id: input.priorityId,
+              author_id: user?.id ?? null,
+            },
+          });
+        }
+      },
+      {
+        // opcional
+        timeout: 15_000,
+        // isolationLevel: 'Serializable', // según DB/need
+      }
+    );
+  } catch (error: any) {
+    this.logger.error(`TicketService - update - error: ${error.message}`, error.stack);
+    throw error;
   }
+
+  // luego de commit, devolvés el ticket actualizado
+  return this.findOne(input.id, fields);
+}
 
   remove(id: string) {
     return `This action removes a #${id} ticket`;

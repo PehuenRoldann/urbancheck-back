@@ -6,6 +6,7 @@ import { Issue } from '@modules/entities/issue.entity';
 import { User } from '@modules/entities/user.entity';
 import { TicketStatus } from './ticket_status.entity';
 import { Dependency } from './dependency.entity';
+import { Priority } from './priority.entity';
 
 @ObjectType()
 export class Ticket {
@@ -57,4 +58,11 @@ export class Ticket {
 
   @Field(() => Dependency, { nullable: true })
   dependency?: Dependency;
+
+
+  @Field(() => Priority, { nullable: true })
+  current_priority?: Priority;
+
+  @Field(() => Date, { nullable: true })
+  scheduled_resolution_at?: Date;
 }
