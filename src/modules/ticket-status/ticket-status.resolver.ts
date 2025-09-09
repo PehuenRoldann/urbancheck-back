@@ -46,7 +46,13 @@ export class TicketStatusResolver {
     @Args('id', { type: () => String }) id: string,
   ): Promise<StatusHistory[]> {
 
-        const res = await this.ticketStatusService.findTicketStatusHistory(id);
-        return res;
+    try {
+      const res = await this.ticketStatusService.findTicketStatusHistory(id);
+      return res;
+    }
+    catch (error) {
+      this.logger.error(`TicketStatusResolver - ticketStatusHistory - error: ${error.message}`, error);
+      throw error;
+    }
   }
 }

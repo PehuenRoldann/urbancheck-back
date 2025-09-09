@@ -29,7 +29,8 @@ export class TicketStatusService {
 
   async findTicketStatusHistory(pTicketId: string): Promise<StatusHistory[]> {
 
-    const status_history = await this.prisma.status_history.findMany({
+    try {
+      const status_history = await this.prisma.status_history.findMany({
         where: {ticket_id: pTicketId},
         include: {
             ticket_status: true,
@@ -38,9 +39,14 @@ export class TicketStatusService {
         orderBy: {
             its: 'asc'
         }
-    });
+      });
 
-    return status_history as unknown as StatusHistory[];
+      return status_history as unknown as StatusHistory[];
+    }
+    catch (error) {
+      this.logger.error(`TicketStatusService - findTicketStatusHistory - error: ${error.message}`, error);
+      throw error;
+    }
   }
 
 
