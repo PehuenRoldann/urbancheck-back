@@ -169,6 +169,11 @@ export class TicketService {
         if (ticket_data.current_priority.description === priority_level_enum.Muy_Alta) ticket_data.current_priority.description = 'Muy Alta';
       }
 
+      if (fields.author) {
+        const author = await this.usersService.findAuthor(ticket_data.id);
+        ticket_data.author = author ?? undefined;
+      }
+
       return ticket_data;
       
 
