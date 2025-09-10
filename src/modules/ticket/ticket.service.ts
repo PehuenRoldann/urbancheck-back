@@ -91,12 +91,9 @@ export class TicketService {
       })
     ]);
 
-    const subscription = await this.prisma.subscription.create({
-      data: {
-        user_id: user.id,
-        ticket_id: createdTicket.id
-      }
-    })
+    const subscription = await this.subscriptionService.createSubscription({
+      ticketId: createdTicket.id
+    }, user);
   
     const fullTicket = await this.prisma.ticket.findFirst({
       where: { id: createdTicket.id },

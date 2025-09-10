@@ -153,6 +153,7 @@ type Query {
   tickets: [Ticket!]!
   ticket(id: String!): Ticket!
   countTickets(filter: TicketFilterInput): Float!
+  getSubscriptions(input: GetSubscriptionsInput!): [Subscription!]!
   ticketStatus: [TicketStatusResult!]!
   ticketStatusHistory(id: String!): [StatusHistory!]!
   findAllIssues: [Issue!]!
@@ -175,6 +176,11 @@ input TicketFilterInput {
   limit: Int
 }
 
+input GetSubscriptionsInput {
+  ticketId: ID
+  active: Boolean
+}
+
 union TicketStatusResult = TicketStatus | ErrorResponse
 
 type Mutation {
@@ -182,6 +188,8 @@ type Mutation {
   createTicket(input: CreateTicketInput!): TicketResult!
   updateTicket(updateTicketInput: UpdateTicketInput!): Ticket!
   removeTicket(id: String!): Ticket!
+  subscribe(input: CreateSubscriptionInput!): Subscription!
+  unsubscribe(input: DeleteSubscriptionInput!): Subscription!
 }
 
 input LazySyncUserInput {
@@ -210,4 +218,13 @@ input UpdateTicketInput {
   issueId: Int
   id: ID!
   scheduledResolutionAt: DateTime
+}
+
+input CreateSubscriptionInput {
+  ticketId: ID!
+}
+
+input DeleteSubscriptionInput {
+  subscriptionId: ID
+  ticketId: ID
 }
