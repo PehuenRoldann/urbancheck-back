@@ -129,6 +129,7 @@ export class TicketService {
           status_history: true,
           priority_history: true,
           subscription: true,
+          issue: true,
         }
       });
 
@@ -218,6 +219,16 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
               ticket_id: input.id,
               priority_id: input.priorityId,
               author_id: user?.id ?? null,
+            },
+          });
+        }
+
+        // 4) Issue (condicional y con await)
+        if (input.issueId !== undefined && input.issueId !== null) {
+          await tx.ticket.update({
+            where: { id: input.id },
+            data: {
+              issue: { connect: { id: input.issueId } },
             },
           });
         }
