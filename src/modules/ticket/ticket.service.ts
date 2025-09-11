@@ -267,90 +267,83 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
 
 
   async findFiltered(
-    filter: TicketFilterInput | undefined = undefined,
-    include_author: boolean = false,
-    include_current_status: boolean = false,
-    include_dependency: boolean = false,
-  ): Promise<Ticket[]> {
+  filter: TicketFilterInput | undefined = undefined,
+  include_author: boolean = false,
+  include_current_status: boolean = false,
+  include_dependency: boolean = false,
+): Promise<Ticket[]> {
+  try {
+    const where: any = {};
 
-   try {
-     const where: any = {};
-  
     if (filter?.user_id) {
-      where.subscription = {
-        some: { user_id: filter.user_id }
-      };
+      where.subscription = { some: { user_id: filter.user_id } };
     }
-  
-    if (filter?.status_id) {
-      where.status_history = {
-        some: { status_id: filter.status_id }
-      };
-    }
-  
-    if (filter?.priority_id) {
-      where.priority_history = {
-        some: { priority_id: filter.priority_id }
-      };
-    }
-  
+
+    // ticket -> issue (1:1) -> dependency
     if (filter?.dependency_id) {
-      where.issue = {
-        dependency_id: filter.dependency_id
-      };
+      where.issue = { is: { dependency_id: filter.dependency_id } };
     }
 
     if (filter?.ticket_id) {
       where.id = filter.ticket_id;
     }
 
-    let dataToReturn: Ticket[] = [];
-    
-    if (filter?.page === undefined) {
-      const prismaTicket = await this.prisma.ticket.findMany({
-        where,
-        include: {
-          issue: true,
-          subscription: true,
-          status_history: {
-            include: {
-              ticket_status: true
-            }
-          },
-          priority_history: true,
-        },
+    const baseInclude = {
+      // incluimos dependency dentro de issue si lo pidieron, así evitamos N+1
+      issue: include_dependency ? { include: { dependency: true } } : true,
+      subscription: true,
+      status_history: {
+        orderBy: { its: 'asc' },
+        include: { ticket_status: true }, // para poder devolver current_status sin otra query
+      },
+      priority_history: {
+        orderBy: { its: 'asc' },
+      },
+    } as const;
+
+    // Traemos los tickets que cumplen los filtros “directos”
+    // (status/priority se aplican luego por post-filtro sobre el último historial)
+    let tickets = await this.prisma.ticket.findMany({
+      where,
+      include: baseInclude,
+      orderBy: { its: 'desc' },
+    });
+
+    // Post-filtro: último status/priority
+    if (filter?.status_id || filter?.priority_id) {
+      tickets = tickets.filter((t) => {
+        const lastStatus = t.status_history?.length
+          ? t.status_history[t.status_history.length - 1]
+          : undefined;
+        const lastPriority = t.priority_history?.length
+          ? t.priority_history[t.priority_history.length - 1]
+          : undefined;
+
+        if (filter?.status_id && (!lastStatus || lastStatus.status_id !== filter.status_id)) {
+          return false;
+        }
+        if (filter?.priority_id && (!lastPriority || lastPriority.priority_id !== filter.priority_id)) {
+          return false;
+        }
+        return true;
       });
-
-      dataToReturn = prismaTicket as unknown as Ticket[];
     }
-    else if (filter?.limit === undefined) {
-      throw Error('TicketService - findFiltered - There is no given limit for pagination!');
-    }
-    else {
-      const page = filter!.page!;
-      const limit = filter!.limit!;
 
+    // Paginación (sobre el resultado ya post-filtrado para que sea consistente)
+    if (filter?.page !== undefined) {
+      if (filter.limit === undefined) {
+        throw Error('TicketService - findFiltered - There is no given limit for pagination!');
+      }
+      const page = filter.page!;
+      const limit = filter.limit!;
       const skip = (page - 1) * limit;
-
-      const data = await this.prisma.ticket.findMany({
-        where,
-        include: {
-          issue: true,
-          subscription: true,
-          status_history: true,
-          priority_history: true,
-        },
-        skip,
-        take: limit,
-        orderBy: { its: 'desc' }
-      });
-
-      dataToReturn = data as unknown as Ticket[];
+      tickets = tickets.slice(skip, skip + limit);
     }
 
+    // Enriquecimientos opcionales
     if (include_author) {
-      dataToReturn = await Promise.all(
-        dataToReturn.map(async (ticket) => {
+      tickets = await Promise.all(
+        tickets.map(async (ticket) => {
           const author = await this.usersService.findAuthor(ticket.id);
           return { ...ticket, author: author ?? undefined };
         })
@@ -358,33 +351,29 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
     }
 
     if (include_current_status) {
-      dataToReturn = await Promise.all(
-        dataToReturn.map(async (ticket) => {
-          const lastIndex = ticket.status_history.length - 1;
-          const last_history = ticket.status_history[lastIndex];
-          const current_status = await this.ticketStatusService.findTicketStatusById(last_history.status_id);
-          return { ...ticket, current_status: current_status ?? undefined };
-        })
-      )
+      tickets = tickets.map((ticket) => {
+        const last = ticket.status_history?.length
+          ? ticket.status_history[ticket.status_history.length - 1]
+          : undefined;
+        const current_status = last?.ticket_status ?? undefined;
+        return { ...ticket, current_status };
+      });
     }
 
     if (include_dependency) {
-      dataToReturn = await Promise.all(
-        dataToReturn.map(async (ticket) => {
-          const dependency = await this.dependencyService.findOneById(ticket.issue!.id);
-          return { ...ticket, dependency: dependency ?? undefined};
-        })
-      )
+      tickets = tickets.map((ticket) => {
+        const dependency = (ticket as any).issue?.dependency ?? undefined;
+        return { ...ticket, dependency };
+      });
     }
 
-
-    return dataToReturn;
-   } catch (error) {
+    return tickets as unknown as Ticket[];
+  } catch (error: any) {
     this.logger.error(`TicketService - findFiltered - error: ${error.message}`, error);
     return [];
-   }
-
   }
+}
+
   
   async countFiltered(filter?: TicketFilterInput): Promise<number> {
     
