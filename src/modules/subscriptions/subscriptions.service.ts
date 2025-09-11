@@ -96,18 +96,27 @@ export class SubscriptionsService {
             }
 
 
-            const subscriptionsForTicket = await this.prisma.subscription.findMany({
+            /* const subscriptionsForTicket = await this.prisma.subscription.findMany({
                 where: {
                     ticket_id: existingSubscription.ticket_id,
                     dts: null,
                 },
                 include: { user_account: true},
                 orderBy: { its: 'asc' }
-            });
+            }); */
+
+            const status_history = await this.prisma.status_history.findFirst({
+                where: { 
+                    ticket_id: existingSubscription.ticket_id!
+                },
+                orderBy: { its: 'asc' },
+                include: { user_account: true }
+            })
+
 
 
             /* Check para que el autor del reclamo no pueda eliminar la subscripción. */
-            if (subscriptionsForTicket.length > 0 && subscriptionsForTicket[0].id === existingSubscription.id) {
+            if (status_history && status_history.author_id === user.id) {
                 this.logger.warn(`SubscriptionsService - deleteSubscription - The author is not allowed to delete their own subscription`);
                 throw new ErrorResponse(
                     `SubscriptionsService - deleteSubscription - The author is not allowed to delete their own subscription`,
