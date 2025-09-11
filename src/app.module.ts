@@ -11,7 +11,6 @@ import { TicketStatusModule } from './modules/ticket-status/ticket-status.module
 import { DependencyModule } from './modules/dependency/dependency.module';
 import { EmailModule } from './modules/email/email.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
-import { IssueModule } from './modules/issue/issue.module';
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import { IssueModule } from './modules/issue/issue.module';
     DependencyModule,
     EmailModule,
     SubscriptionsModule,
-    IssueModule,
   ],
   controllers: [AppController],
   providers: [AppService],

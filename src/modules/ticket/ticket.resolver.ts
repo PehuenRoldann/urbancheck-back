@@ -56,6 +56,21 @@ export class TicketResolver {
 
   @Query(() => [Ticket])
   @UseGuards(KeycloakProfileGuard)
+  async getMarkersData(
+    @Info() info: GraphQLResolveInfo,
+  ): Promise<Ticket[]> {
+    const requestedFields = graphqlFields(info);
+    this.logger.log(`TicketResolver - getMarkersData - requested fields: ${JSON.stringify(requestedFields)}`);
+    try {
+      return await this.ticketService.getMarkersData();
+    } catch (error) {
+      this.logger.error(`TicketResolver - getMarkersData - error: ${error.message}`, error);
+      throw error;
+    }
+  }
+
+  @Query(() => [Ticket])
+  @UseGuards(KeycloakProfileGuard)
   async findTickets(
     @Info() info: GraphQLResolveInfo,
     @Args('filter', { nullable: true }) filter?: TicketFilterInput,

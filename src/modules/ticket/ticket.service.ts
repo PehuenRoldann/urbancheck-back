@@ -20,7 +20,9 @@ import { SubscriptionsService } from '@modules/subscriptions/subscriptions.servi
 
 @Injectable()
 export class TicketService {
-  
+
+
+ 
 
   constructor (
     private readonly prisma: PrismaService,
@@ -406,6 +408,29 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
     return this.prisma.ticket.count({
       where,
     });
-
   }
+
+  async getMarkersData(): Promise<Ticket[]> {
+  try {
+
+
+    const rows = await this.prisma.$queryRawUnsafe<Ticket[]>(`
+      WITH last_status AS (
+        SELECT DISTINCT ON (sh.ticket_id)
+               sh.ticket_id, sh.status_id
+        FROM status_history sh
+        ORDER BY sh.ticket_id, sh.its DESC
+      )
+      SELECT t.*
+      FROM ticket t
+      JOIN last_status ls ON ls.ticket_id = t.id
+      WHERE ls.status_id NOT IN (4, 5, 6, 7, 9)    -- Resuelto, Finalizado
+      ORDER BY t.its DESC
+    `);
+    return rows;
+  } catch (err) {
+    this.logger.error('TicketService - getMarkersData - error', err);
+    return [];
+  }
+}
 }

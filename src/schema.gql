@@ -149,6 +149,7 @@ type Query {
   ticketAuthor(id: String!): UserResult!
   user(id: String!): UserResult!
   findOneByToken: UserResult!
+  getMarkersData: [Ticket!]!
   findTickets(filter: TicketFilterInput): [Ticket!]!
   tickets: [Ticket!]!
   ticket(id: String!): Ticket!
