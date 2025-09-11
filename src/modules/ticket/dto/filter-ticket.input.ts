@@ -19,4 +19,9 @@ export class TicketFilterInput {
 
   @Field(() => Int, { nullable: true })
   limit?: number;
+
+  @Field(() => ID, { nullable: true })
+  ticket_id?: string;
+
+  
 }

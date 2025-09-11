@@ -273,7 +273,8 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
     include_dependency: boolean = false,
   ): Promise<Ticket[]> {
 
-    const where: any = {};
+   try {
+     const where: any = {};
   
     if (filter?.user_id) {
       where.subscription = {
@@ -297,6 +298,10 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
       where.issue = {
         dependency_id: filter.dependency_id
       };
+    }
+
+    if (filter?.ticket_id) {
+      where.id = filter.ticket_id;
     }
 
     let dataToReturn: Ticket[] = [];
@@ -374,6 +379,10 @@ async update(input: UpdateTicketInput, fields: any, user: User) {
 
 
     return dataToReturn;
+   } catch (error) {
+    this.logger.error(`TicketService - findFiltered - error: ${error.message}`, error);
+    return [];
+   }
 
   }
   
