@@ -204,7 +204,7 @@ INSERT INTO priority (description) VALUES
 
 -- Problemáticas
 INSERT INTO issue (description, code, enabled, dependency_id) VALUES
-  ('Arboldado urbano', 'arboldado_urbano', true, 1),
+  ('Arbolado urbano', 'arboldado_urbano', true, 1),
   ('Alumbrado público', 'alumbrado_publico', true, 2),
   ('Mantenimiento de cloaca y agua potable', 'mantenimiento_cloaca_agua', true, 3),
   ('Recolección de residuos', 'recoleccion_residuos', true, 4),
